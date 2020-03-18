@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+<!-- 搜狗验证 -->
+  <meta name="sogou_site_verification" content="kkFBWNxy5B">
+
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000">
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top">
+  
+  
+  <title>Go-Micro学习笔记 - 4.1 MicroAPI 之 api | 小码侠</title>
+  <meta name="description" content="通过之前的学习，我们已经知道了如何编写服务，并且了解到了API网关。接下来我们将学习如何编写API的处理器，我们先从我们最熟悉的api开始。  api 处理器通过RPC向go-micro应用转送请求，会把完整的http头封装向下传送，不限制请求方法。  编写API 我的目录结构大概是这样的。之后的操作我们都是基于  $GOPATH/src/gitee.com/wolferhua/go-micro-">
+<meta name="keywords" content="go,micro,microservice">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Go-Micro学习笔记 - 4.1 MicroAPI 之 api">
+<meta property="og:url" content="https://wolferhua.github.io/2020/02/05/go-micro-book4.1/index.html">
+<meta property="og:site_name" content="小码侠">
+<meta property="og:description" content="通过之前的学习，我们已经知道了如何编写服务，并且了解到了API网关。接下来我们将学习如何编写API的处理器，我们先从我们最熟悉的api开始。  api 处理器通过RPC向go-micro应用转送请求，会把完整的http头封装向下传送，不限制请求方法。  编写API 我的目录结构大概是这样的。之后的操作我们都是基于  $GOPATH/src/gitee.com/wolferhua/go-micro-">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-03-18T02:10:25.489Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Go-Micro学习笔记 - 4.1 MicroAPI 之 api">
+<meta name="twitter:description" content="通过之前的学习，我们已经知道了如何编写服务，并且了解到了API网关。接下来我们将学习如何编写API的处理器，我们先从我们最熟悉的api开始。  api 处理器通过RPC向go-micro应用转送请求，会把完整的http头封装向下传送，不限制请求方法。  编写API 我的目录结构大概是这样的。之后的操作我们都是基于  $GOPATH/src/gitee.com/wolferhua/go-micro-">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://wolferhua.github.io/2020/02/05/go-micro-book4.1/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="小码侠" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+  
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.css">
+  
+</head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://wolferhua.anycps.com/" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">小码侠</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Chengdu, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav menu-highlight">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/wolferhua" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="http://weibo.com/wolferhua" target="_blank" title="Weibo" data-toggle=tooltip data-placement=top><i class="icon icon-weibo"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a><span class="category-list-count">11</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/go/">go</a><span class="category-list-count">9</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/go/micro/">micro</a><span class="category-list-count">9</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/kubernetes/">kubernetes</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/">leetcode</a><span class="category-list-count">8</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/array/">array</a><span class="category-list-count">8</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/linux/">linux</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/linux/vagrant/">vagrant</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/protobuf/">protobuf</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/面试/">面试</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/array/">array</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/leetcode/">leetcode</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/micro/">micro</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/microservice/">microservice</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/protobuf/">protobuf</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/array/" style="font-size: 13.25px;">array</a> <a href="/tags/docker/" style="font-size: 13.75px;">docker</a> <a href="/tags/go/" style="font-size: 13.5px;">go</a> <a href="/tags/golang/" style="font-size: 13.25px;">golang</a> <a href="/tags/java/" style="font-size: 13px;">java</a> <a href="/tags/leetcode/" style="font-size: 13.25px;">leetcode</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/micro/" style="font-size: 13.5px;">micro</a> <a href="/tags/microservice/" style="font-size: 13.5px;">microservice</a> <a href="/tags/nginx/" style="font-size: 13px;">nginx</a> <a href="/tags/protobuf/" style="font-size: 13px;">protobuf</a> <a href="/tags/ssh/" style="font-size: 13px;">ssh</a> <a href="/tags/vagrant/" style="font-size: 13px;">vagrant</a> <a href="/tags/面试/" style="font-size: 13px;">面试</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">十月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">九月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/linux/">linux</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/linux/vagrant/">vagrant</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/13/vagrant-guide-1/" class="title">Vagrant指南</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-13T15:05:17.000Z" itemprop="datePublished">2020-02-13</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/12/go-micro-book4-5/" class="title">Go-Micro学习笔记 - 4.5 MicroAPI 之 meta*</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-12T06:47:44.000Z" itemprop="datePublished">2020-02-12</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/10/1go-micro-book4-4/" class="title">Go-Micro学习笔记 - 4.4 MicroAPI 之 event</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-10T11:30:59.000Z" itemprop="datePublished">2020-02-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/10/2go-micro-book4-3/" class="title">Go-Micro学习笔记 - 4.3 MicroAPI 之 web 、http</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-10T11:30:59.000Z" itemprop="datePublished">2020-02-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/06/go-micro-book4-2/" class="title">Go-Micro学习笔记 - 4.2 MicroAPI 之 rpc</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-06T09:19:22.000Z" itemprop="datePublished">2020-02-06</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<aside class="sidebar sidebar-toc collapse" id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#编写API"><span class="toc-number">1.</span> <span class="toc-text">编写API</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#一、定义API"><span class="toc-number">1.1.</span> <span class="toc-text">一、定义API</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#定义api接口的API"><span class="toc-number">1.1.1.</span> <span class="toc-text">定义api接口的API</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#定义srv接口API"><span class="toc-number">1.1.2.</span> <span class="toc-text">定义srv接口API</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#二、生成API"><span class="toc-number">1.2.</span> <span class="toc-text">二、生成API</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#三、编写Handler"><span class="toc-number">1.3.</span> <span class="toc-text">三、编写Handler</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#API定义查看"><span class="toc-number">1.3.1.</span> <span class="toc-text">API定义查看</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#编写代码"><span class="toc-number">1.3.2.</span> <span class="toc-text">编写代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#四、调用服务"><span class="toc-number">1.4.</span> <span class="toc-text">四、调用服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#五、main-go"><span class="toc-number">1.5.</span> <span class="toc-text">五、main.go</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#六、运行"><span class="toc-number">1.6.</span> <span class="toc-text">六、运行</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#启动服务"><span class="toc-number">1.6.1.</span> <span class="toc-text">启动服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#启动网关"><span class="toc-number">1.6.2.</span> <span class="toc-text">启动网关</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#启动api"><span class="toc-number">1.6.3.</span> <span class="toc-text">启动api</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#验证"><span class="toc-number">1.6.4.</span> <span class="toc-text">验证</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#查看服务列表"><span class="toc-number">1.6.4.1.</span> <span class="toc-text">查看服务列表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#访问api"><span class="toc-number">1.6.4.2.</span> <span class="toc-text">访问api</span></a></li></ol></li></ol></li></ol></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-go-micro-book4.1" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Go-Micro学习笔记 - 4.1 MicroAPI 之 api
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/02/05/go-micro-book4.1/" class="article-date">
+	  <time datetime="2020-02-05T09:55:09.000Z" itemprop="datePublished">2020-02-05</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/go/">go</a>►<a class="article-category-link" href="/categories/go/micro/">micro</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link" href="/tags/go/">go</a>, <a class="article-tag-link" href="/tags/micro/">micro</a>, <a class="article-tag-link" href="/tags/microservice/">microservice</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/02/05/go-micro-book4.1/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.5k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 7(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <p>通过之前的学习，我们已经知道了如何编写服务，并且了解到了<a href="/2020/02/04/go-micro-book4/">API网关</a>。接下来我们将学习如何编写<strong>API</strong>的处理器，我们先从我们最熟悉的<code>api</code>开始。</p>
+<blockquote>
+<p><code>api</code> 处理器通过RPC向go-micro应用转送请求，会把完整的http头封装向下传送，不限制请求方法。</p>
+</blockquote>
+<h1 id="编写API"><a href="#编写API" class="headerlink" title="编写API"></a>编写API</h1><blockquote>
+<p>我的目录结构大概是这样的。之后的操作我们都是基于  <code>$GOPATH/src/gitee.com/wolferhua/go-micro-demo/demo001</code> 目录里边的相对路径。后边就不赘述了。</p>
+</blockquote>
+<h2 id="一、定义API"><a href="#一、定义API" class="headerlink" title="一、定义API"></a>一、定义API</h2><h3 id="定义api接口的API"><a href="#定义api接口的API" class="headerlink" title="定义api接口的API"></a>定义api接口的API</h3><p><code>api1/proto/api1/api1.proto</code></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">syntax = <span class="string">"proto3"</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"github.com/micro/go-micro/api/proto/api.proto"</span>;</span><br><span class="line"></span><br><span class="line">service Api1 &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// go.api.Request 和 go.api.Response 里边就封装了http相关的内容。</span></span><br><span class="line">    rpc Get(go.api.Request) returns(go.api.Response) &#123;&#125;;</span><br><span class="line">    rpc Post(go.api.Request) returns(go.api.Response) &#123;&#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="定义srv接口API"><a href="#定义srv接口API" class="headerlink" title="定义srv接口API"></a>定义<code>srv</code>接口API</h3><blockquote>
+<p>这个是我们之前编写服务的定义，如有疑惑请看前面章节。</p>
+</blockquote>
+<p><code>api1/proto/srv1/srv1.proto</code></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">syntax = <span class="string">"proto3"</span>;</span><br><span class="line"></span><br><span class="line">service Srv1 &#123;</span><br><span class="line">    rpc Hello(HelloRequest) returns (HelloResponse) &#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">message HelloRequest &#123;</span><br><span class="line">    string name = <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">message HelloResponse &#123;</span><br><span class="line">    string greeting = <span class="number">2</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="二、生成API"><a href="#二、生成API" class="headerlink" title="二、生成API"></a>二、生成API</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment"># api </span></span><br><span class="line"><span class="built_in">cd</span> api1/proto/api1</span><br><span class="line">protoc --proto_path=<span class="variable">$GOPATH</span>/src:. --micro_out=. --go_out=. api1.proto</span><br><span class="line"></span><br><span class="line"><span class="comment"># srv</span></span><br><span class="line"><span class="built_in">cd</span> api1/proto/srv1</span><br><span class="line">protoc --proto_path=<span class="variable">$GOPATH</span>/src:. --micro_out=. --go_out=. srv1.proto</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">## 目录结构</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># proto</span></span><br><span class="line"><span class="comment"># ├── api1</span></span><br><span class="line"><span class="comment"># │   ├── api1.pb.go</span></span><br><span class="line"><span class="comment"># │   ├── api1.pb.micro.go</span></span><br><span class="line"><span class="comment"># │   └── api1.proto</span></span><br><span class="line"><span class="comment"># └── srv1</span></span><br><span class="line"><span class="comment">#     ├── srv1.pb.go</span></span><br><span class="line"><span class="comment">#     ├── srv1.pb.micro.go</span></span><br><span class="line"><span class="comment">#     └── srv1.prot</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="三、编写Handler"><a href="#三、编写Handler" class="headerlink" title="三、编写Handler"></a>三、编写Handler</h2><h3 id="API定义查看"><a href="#API定义查看" class="headerlink" title="API定义查看"></a>API定义查看</h3><p>查看上边生成的内容，可以知道<code>api</code>的<code>interface</code>定义如下。</p>
+<p><code>api1/proto/api1/api1.pb.micro.go:77</code></p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Api1Handler <span class="keyword">interface</span> &#123;</span><br><span class="line">	Get(context.Context, *proto1.Request, *proto1.Response) error</span><br><span class="line">	Post(context.Context, *proto1.Request, *proto1.Response) error</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="编写代码"><a href="#编写代码" class="headerlink" title="编写代码"></a>编写代码</h3><p><code>api1/handler/api1.go</code></p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> handler</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"context"</span></span><br><span class="line">	<span class="string">"encoding/json"</span></span><br><span class="line">	<span class="string">"strings"</span></span><br><span class="line"></span><br><span class="line">	<span class="string">"gitee.com/wolferhua/go-micro-demo/demo001/api1/srv"</span></span><br><span class="line"></span><br><span class="line">	proto1 <span class="string">"github.com/micro/go-micro/api/proto"</span></span><br><span class="line">	<span class="string">"github.com/micro/go-micro/v2/errors"</span></span><br><span class="line">	<span class="string">"github.com/micro/go-micro/v2/util/log"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Api1 <span class="keyword">struct</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Api1.Get 通过API向外暴露为/api1/get，接收http请求</span></span><br><span class="line"><span class="comment">// 即：/api1/get请求会调用com.anycps.wolferhua.api.api1服务的Api1.Get方法</span></span><br><span class="line"><span class="comment">//curl 'http://localhost:8080/api1/get?name=wolferhua'</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(a *Api1)</span> <span class="title">Get</span><span class="params">(ctx context.Context, in *proto1.Request, out *proto1.Response)</span> <span class="title">error</span></span> &#123;</span><br><span class="line"></span><br><span class="line">	log.Log(<span class="string">"Api1.Get接口收到请求"</span>)</span><br><span class="line"></span><br><span class="line">	name, ok := in.Get[<span class="string">"name"</span>]</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> !ok || <span class="built_in">len</span>(name.Values) == <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> errors.BadRequest(<span class="string">"com.anycps.wolferhua.api.api1"</span>, <span class="string">"参数不正确"</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 打印请求头</span></span><br><span class="line">	<span class="keyword">for</span> k, v := <span class="keyword">range</span> in.Header &#123;</span><br><span class="line">		log.Log(<span class="string">"请求头信息，"</span>, k, <span class="string">" : "</span>, v)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	out.StatusCode = <span class="number">200</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 调用服务,其目的是达到服务相互调用的效果演示。</span></span><br><span class="line">	sname := strings.Join(name.Values, <span class="string">""</span>)</span><br><span class="line">	srvRsp, err := srv.Srv1(sname)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> errors.InternalServerError(<span class="string">"com.anycps.wolferhua.api.api1"</span>, <span class="string">"服务端响应失败:"</span>+err.Error())</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 业务代码</span></span><br><span class="line">	b, _ := json.Marshal(<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">string</span>&#123;</span><br><span class="line">		<span class="string">"message"</span>: <span class="string">"我们已经收到你的请求，"</span> + srvRsp,</span><br><span class="line">	&#125;)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 设置返回值</span></span><br><span class="line">	out.Body = <span class="keyword">string</span>(b)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Api1.Post 通过API向外暴露为/api1/get，接收http请求</span></span><br><span class="line"><span class="comment">// 即：/api1/post请求会调用com.anycps.wolferhua.api.api1服务的Api1.Post方法</span></span><br><span class="line"><span class="comment">// curl http://localhost:8080/api1/post -X POST -H 'Content-Type: application/json' -d '&#123;"name":"wolferhua"&#125;'</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(a *Api1)</span> <span class="title">Post</span><span class="params">(ctx context.Context, in *proto1.Request, out *proto1.Response)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	log.Log(<span class="string">"Api1.Post接口收到请求"</span>)</span><br><span class="line">	<span class="comment">// 判断请求类型</span></span><br><span class="line">	<span class="keyword">if</span> in.Method != <span class="string">"POST"</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> errors.BadRequest(<span class="string">"com.anycps.wolferhua.api.api1"</span>, <span class="string">"require post"</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 获取请求头信息</span></span><br><span class="line">	ct, ok := in.Header[<span class="string">"Content-Type"</span>]</span><br><span class="line">	<span class="keyword">if</span> !ok || <span class="built_in">len</span>(ct.Values) == <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> errors.BadRequest(<span class="string">"com.anycps.wolferhua.api.api1"</span>, <span class="string">"need content-type"</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 判断请求头类型</span></span><br><span class="line">	<span class="keyword">if</span> ct.Values[<span class="number">0</span>] != <span class="string">"application/json"</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> errors.BadRequest(<span class="string">"com.anycps.wolferhua.api.api1"</span>, <span class="string">"expect application/json"</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 获取请求数据</span></span><br><span class="line">	<span class="keyword">var</span> body <span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">interface</span>&#123;&#125;</span><br><span class="line">	json.Unmarshal([]<span class="keyword">byte</span>(in.Body), &amp;body)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 设置返回值</span></span><br><span class="line">	out.Body = <span class="string">"收到消息："</span> + <span class="keyword">string</span>([]<span class="keyword">byte</span>(in.Body))</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 其他方法，无法被api调用</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(a *Api1)</span> <span class="title">Test</span><span class="params">()</span></span> &#123;</span><br><span class="line">	log.Log(<span class="string">"Api1.Test接口收到请求"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="四、调用服务"><a href="#四、调用服务" class="headerlink" title="四、调用服务"></a>四、调用服务</h2><p><code>api1/srv/srv1.go</code></p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> srv</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"context"</span></span><br><span class="line">	<span class="string">"log"</span></span><br><span class="line"></span><br><span class="line">	<span class="string">"gitee.com/wolferhua/go-micro-demo/demo001/api1/proto/srv1"</span></span><br><span class="line">	<span class="string">"github.com/micro/go-micro/v2"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Srv1</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="params">(<span class="keyword">string</span>, error)</span></span> &#123;</span><br><span class="line">	service := micro.NewService()</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 获取客户端对象</span></span><br><span class="line">	client := service.Client()</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 创建srv1 客户端</span></span><br><span class="line">	srv1Client := srv1.NewSrv1Service(<span class="string">"com.anycps.wolferhua.srv1"</span>, client)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 在Srv1 handler上请求调用Hello方法</span></span><br><span class="line">	rsp, err := srv1Client.Hello(context.TODO(), &amp;srv1.HelloRequest&#123;</span><br><span class="line">		Name: name,</span><br><span class="line">	&#125;)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">		<span class="keyword">return</span> <span class="string">""</span>, err</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 返回服务端</span></span><br><span class="line">	<span class="keyword">return</span> rsp.Greeting, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="五、main-go"><a href="#五、main-go" class="headerlink" title="五、main.go"></a>五、main.go</h2><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"gitee.com/wolferhua/go-micro-demo/demo001/api1/handler"</span></span><br><span class="line">	<span class="string">"gitee.com/wolferhua/go-micro-demo/demo001/api1/proto/api1"</span></span><br><span class="line"></span><br><span class="line">	micro <span class="string">"github.com/micro/go-micro/v2"</span></span><br><span class="line">	<span class="string">"github.com/micro/go-micro/v2/util/log"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// 创建新服务</span></span><br><span class="line">	service := micro.NewService(</span><br><span class="line">		micro.Name(<span class="string">"com.anycps.wolferhua.api.api1"</span>),</span><br><span class="line">    )</span><br><span class="line">	<span class="comment">// 细心的朋友可以发现：我们之前定义服务时使用的是：com.anycps.wolferhua.***，</span></span><br><span class="line">	<span class="comment">// 现在却使用：com.anycps.wolferhua.api.***。</span></span><br><span class="line">	<span class="comment">// 因为我们会定义非常多的接口，需要一个统一的命名空间（Namespace）方便管理。</span></span><br><span class="line">	<span class="comment">// 至于命名空间，我们之后会讲解,go-micro 中使用的非常多。</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 初始化</span></span><br><span class="line">	service.Init()</span><br><span class="line">	<span class="comment">// 注册处理器</span></span><br><span class="line">	api1.RegisterApi1Handler(service.Server(), <span class="built_in">new</span>(handler.Api1))</span><br><span class="line">	<span class="comment">// 执行服务</span></span><br><span class="line">	<span class="keyword">if</span> err := service.Run(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="六、运行"><a href="#六、运行" class="headerlink" title="六、运行"></a>六、运行</h2><h3 id="启动服务"><a href="#启动服务" class="headerlink" title="启动服务"></a>启动服务</h3><p>因为我们在<code>api</code>中调用了服务，所以需要启动它，如果你在操作时省去了服务调用环节，可以不用启动它，不是必须的。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> srv1 </span><br><span class="line">go run main.go</span><br></pre></td></tr></table></figure>
+
+<h3 id="启动网关"><a href="#启动网关" class="headerlink" title="启动网关"></a>启动网关</h3><p>网关的概念，上一张我们讲到过，不清楚的可以看一下：<a href="/2020/02/04/go-micro-book4/">Go-Micro学习笔记 - 4. MicroAPI(API网关)</a></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">micro api --namespace com.anycps.wolferhua.api --handler api</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2020-02-05 17:44:31 [api] Registering API Default Handler at /</span></span><br><span class="line"><span class="comment"># 2020-02-05 17:44:31 [api] HTTP API Listening on [::]:8080</span></span><br><span class="line"><span class="comment"># 2020-02-05 17:44:31 [api] Starting [service] go.micro.api</span></span><br><span class="line"><span class="comment"># 2020-02-05 17:44:31 [api] Server [grpc] Listening on [::]:33951</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>参数解释：</strong></p>
+<ul>
+<li><strong>–namespace：</strong> 指定命名空间，只有在这个命名空间以内的服务才可以被访问。</li>
+<li><strong>–handler：</strong> 指定服务类型，这里指定的是<code>api</code>,上一章我们讲过handler的类型。</li>
+</ul>
+<h3 id="启动api"><a href="#启动api" class="headerlink" title="启动api"></a>启动api</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> api1</span><br><span class="line">go run main.go</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2020-02-05 17:03:23 Starting [service] com.anycps.wolferhua.api.api1</span></span><br><span class="line"><span class="comment"># 2020-02-05 17:03:23 Server [grpc] Listening on [::]:43785</span></span><br><span class="line"><span class="comment"># 2020-02-05 17:03:23 Registry [mdns] Registering node: com.anycps.wolferhua.api.api1-3c0fd6b3-9e19-4c4b-ba12-a217ee15492c</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><h4 id="查看服务列表"><a href="#查看服务列表" class="headerlink" title="查看服务列表"></a>查看服务列表</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">micro list services                                         </span><br><span class="line"><span class="comment"># com.anycps.wolferhua.api.api1 # api 服务</span></span><br><span class="line"><span class="comment"># com.anycps.wolferhua.srv1 # 服务</span></span><br><span class="line"><span class="comment"># go.micro.api  # 网关</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="访问api"><a href="#访问api" class="headerlink" title="访问api"></a>访问api</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">curl <span class="string">'http://localhost:8080/api1/get?name=wolferhua'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># &#123;"message":"我们已经收到你的请求，Hello wolferhua ,from pid 10086"&#125;</span></span><br><span class="line"></span><br><span class="line">curl http://localhost:8080/api1/post -X POST -H <span class="string">'Content-Type: application/json'</span> -d <span class="string">'&#123;"name":"wolferhua"&#125;'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 收到消息：&#123;"name":"wolferhua"&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>如此我们的<code>api</code>编写完成。</p>
+<pre><code>
+
+# 代码仓库
+
+- [Api1代码](https://gitee.com/wolferhua/go-micro-demo/tree/master/demo001/api1) </code></pre>
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="/2020/02/05/go-micro-book4.1/" title="Go-Micro学习笔记 - 4.1 MicroAPI 之 api" target="_blank" rel="external">https://wolferhua.github.io/2020/02/05/go-micro-book4.1/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://wolferhua.anycps.com/" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://wolferhua.anycps.com/" target="_blank"><span class="text-dark">小码侠</span><small class="ml-1x">Developer</small></a></h3>
+        <div>Golang、 PHP、 Java、 vue. js 手到擒来。服务器运维更是不在话下 shell、 Docker、 Zabbix、 Redis、 Elasticsearch、 MongoDb、 MySql……</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+           
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2020/02/04/go-micro-book4/" title="Go-Micro学习笔记 - 4. MicroAPI(API网关)"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2020/02/06/protobuf/" title="Protobuf 语言指南（proto3）"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn collapsed" data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">
+        <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/wolferhua" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="http://weibo.com/wolferhua" target="_blank" title="Weibo" data-toggle=tooltip data-placement=top><i class="icon icon-weibo"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        &copy; 2020 wolferhua
+        
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+
+    
+        <span class="copyright">
+            <span id="busuanzi_container_site_pv">
+                PV： <span id="busuanzi_value_site_pv">0</span>
+            </span>
+            <span id="busuanzi_container_site_uv">
+                UV： <span id="busuanzi_value_site_uv">0</span>
+            </span>
+        </span>
+    
+
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            if(!window.location ||!window.location.host ||window.location.host!="wolferhua.anycps.com") return;
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?4d4b0690176b0a709fb4d5c236e5136c";
+          var s = document.getElementsByTagName("script")[0]; 
+          s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        }
+        else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+    </script>
+        
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+<script src="/js/plugin.min.js"></script>
+<script src="/js/application.js"></script>
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+
+    <!-- 
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+ -->
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+   
+    
+  <!-- <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css"> -->
+  <script src="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/blueimp-md5@2.10.0/js/md5.min.js"></script>
+  <script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'a1f0b1bed343d82573b2',
+    clientSecret: '560c2b0f6e1eef7a1b0f3ea228ccb75572e63a44',
+    repo: 'gitalk-github',
+    owner: 'wolferhua',
+    admin: ['wolferhua'],
+    id: md5(location.pathname),
+    distractionFreeMode: true
+  })
+  gitalk.render('comments')
+  </script>
+
+      
+
+
+
+
+
+
+
+
+    
+<script>
+    var _mtac = {"performanceMonitor":1,"senseQuery":1};
+    (function() {
+        var mta = document.createElement("script");
+        mta.src = "//pingjs.qq.com/h5/stats.js?v2.0.4";
+        mta.setAttribute("name", "MTAH5");
+        mta.setAttribute("sid", "500683241");
+        mta.setAttribute("cid", "500683242");
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(mta, s);
+    })();
+</script>
+ 
+
+</body>
+</html>

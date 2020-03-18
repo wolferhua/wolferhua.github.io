@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+<!-- 搜狗验证 -->
+  <meta name="sogou_site_verification" content="kkFBWNxy5B">
+
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000">
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top">
+  
+  
+  <title>Go-Micro学习笔记 - 4. MicroAPI(API网关) | 小码侠</title>
+  <meta name="description" content="Micro API Micro API是基于服务发现驱动开发的可插拔API框架，旨在帮助构建强大的 API网关。  API网关模式API网关模式 为服务提供了一个单一的公共入口。  之后的内容中简称：API,不要和api搞混了，api正对的是一个具体的实现，具体的业务接口。而 API 代表的始终具体的规范。为什么要这样呢？主要是为了更贴合官方文档，有可能我理解的不够准确。     API网关可以为">
+<meta name="keywords" content="go,micro,microservice">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Go-Micro学习笔记 - 4. MicroAPI(API网关)">
+<meta property="og:url" content="https://wolferhua.github.io/2020/02/04/go-micro-book4/index.html">
+<meta property="og:site_name" content="小码侠">
+<meta property="og:description" content="Micro API Micro API是基于服务发现驱动开发的可插拔API框架，旨在帮助构建强大的 API网关。  API网关模式API网关模式 为服务提供了一个单一的公共入口。  之后的内容中简称：API,不要和api搞混了，api正对的是一个具体的实现，具体的业务接口。而 API 代表的始终具体的规范。为什么要这样呢？主要是为了更贴合官方文档，有可能我理解的不够准确。     API网关可以为">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://wolferhua.gitee.io/blog/images/go-micro-book/apigateway.jpg">
+<meta property="og:image" content="https://wolferhua.gitee.io/blog/images/go-micro-book/bffe.png">
+<meta property="og:image" content="https://wolferhua.gitee.io/blog/images/go-micro-book/microapi.png">
+<meta property="og:updated_time" content="2020-02-10T11:07:12.020Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Go-Micro学习笔记 - 4. MicroAPI(API网关)">
+<meta name="twitter:description" content="Micro API Micro API是基于服务发现驱动开发的可插拔API框架，旨在帮助构建强大的 API网关。  API网关模式API网关模式 为服务提供了一个单一的公共入口。  之后的内容中简称：API,不要和api搞混了，api正对的是一个具体的实现，具体的业务接口。而 API 代表的始终具体的规范。为什么要这样呢？主要是为了更贴合官方文档，有可能我理解的不够准确。     API网关可以为">
+<meta name="twitter:image" content="https://wolferhua.gitee.io/blog/images/go-micro-book/apigateway.jpg">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://wolferhua.github.io/2020/02/04/go-micro-book4/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="小码侠" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+  
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.css">
+  
+</head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://wolferhua.anycps.com/" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">小码侠</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Chengdu, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav menu-highlight">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/wolferhua" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="http://weibo.com/wolferhua" target="_blank" title="Weibo" data-toggle=tooltip data-placement=top><i class="icon icon-weibo"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a><span class="category-list-count">11</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/go/">go</a><span class="category-list-count">9</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/go/micro/">micro</a><span class="category-list-count">9</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/kubernetes/">kubernetes</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/">leetcode</a><span class="category-list-count">8</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/array/">array</a><span class="category-list-count">8</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/linux/">linux</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/linux/vagrant/">vagrant</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/protobuf/">protobuf</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/面试/">面试</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/array/">array</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/leetcode/">leetcode</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/micro/">micro</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/microservice/">microservice</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/protobuf/">protobuf</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/array/" style="font-size: 13.25px;">array</a> <a href="/tags/docker/" style="font-size: 13.75px;">docker</a> <a href="/tags/go/" style="font-size: 13.5px;">go</a> <a href="/tags/golang/" style="font-size: 13.25px;">golang</a> <a href="/tags/java/" style="font-size: 13px;">java</a> <a href="/tags/leetcode/" style="font-size: 13.25px;">leetcode</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/micro/" style="font-size: 13.5px;">micro</a> <a href="/tags/microservice/" style="font-size: 13.5px;">microservice</a> <a href="/tags/nginx/" style="font-size: 13px;">nginx</a> <a href="/tags/protobuf/" style="font-size: 13px;">protobuf</a> <a href="/tags/ssh/" style="font-size: 13px;">ssh</a> <a href="/tags/vagrant/" style="font-size: 13px;">vagrant</a> <a href="/tags/面试/" style="font-size: 13px;">面试</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">十月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">九月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/linux/">linux</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/linux/vagrant/">vagrant</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/13/vagrant-guide-1/" class="title">Vagrant指南</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-13T15:05:17.000Z" itemprop="datePublished">2020-02-13</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/12/go-micro-book4-5/" class="title">Go-Micro学习笔记 - 4.5 MicroAPI 之 meta*</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-12T06:47:44.000Z" itemprop="datePublished">2020-02-12</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/10/1go-micro-book4-4/" class="title">Go-Micro学习笔记 - 4.4 MicroAPI 之 event</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-10T11:30:59.000Z" itemprop="datePublished">2020-02-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/10/2go-micro-book4-3/" class="title">Go-Micro学习笔记 - 4.3 MicroAPI 之 web 、http</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-10T11:30:59.000Z" itemprop="datePublished">2020-02-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/06/go-micro-book4-2/" class="title">Go-Micro学习笔记 - 4.2 MicroAPI 之 rpc</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-06T09:19:22.000Z" itemprop="datePublished">2020-02-06</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<aside class="sidebar sidebar-toc collapse" id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Micro-API"><span class="toc-number">1.</span> <span class="toc-text">Micro API</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#API网关模式"><span class="toc-number">1.1.</span> <span class="toc-text">API网关模式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#前端的后端API"><span class="toc-number">1.1.0.1.</span> <span class="toc-text">前端的后端API</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Micro-API-1"><span class="toc-number">1.2.</span> <span class="toc-text">Micro API</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#运行"><span class="toc-number">1.2.1.</span> <span class="toc-text">运行</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Handlers"><span class="toc-number">2.</span> <span class="toc-text">Handlers</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#请求映射"><span class="toc-number">2.1.</span> <span class="toc-text">请求映射</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RPC-API类型"><span class="toc-number">2.1.1.</span> <span class="toc-text">RPC/API类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Proxy类型"><span class="toc-number">2.1.2.</span> <span class="toc-text">Proxy类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event类型"><span class="toc-number">2.1.3.</span> <span class="toc-text">Event类型</span></a></li></ol></li></ol></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-go-micro-book4" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Go-Micro学习笔记 - 4. MicroAPI(API网关)
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/02/04/go-micro-book4/" class="article-date">
+	  <time datetime="2020-02-04T11:15:34.000Z" itemprop="datePublished">2020-02-04</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/go/">go</a>►<a class="article-category-link" href="/categories/go/micro/">micro</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link" href="/tags/go/">go</a>, <a class="article-tag-link" href="/tags/micro/">micro</a>, <a class="article-tag-link" href="/tags/microservice/">microservice</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/02/04/go-micro-book4/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.4k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 5(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h1 id="Micro-API"><a href="#Micro-API" class="headerlink" title="Micro API"></a>Micro API</h1><blockquote>
+<p>Micro API是基于服务发现驱动开发的可插拔API框架，旨在帮助构建强大的 <a href="https://microservices.io/patterns/apigateway.html" target="_blank" rel="noopener"><code>API网关</code></a>。</p>
+</blockquote>
+<h2 id="API网关模式"><a href="#API网关模式" class="headerlink" title="API网关模式"></a>API网关模式</h2><p><a href="https://microservices.io/patterns/apigateway.html" target="_blank" rel="noopener"><code>API网关模式</code></a> 为服务提供了一个单一的公共入口。</p>
+<blockquote>
+<p>之后的内容中简称：<strong><code>API</code></strong>,不要和<code>api</code>搞混了，<code>api</code>正对的是一个具体的实现，具体的业务接口。而 <strong><code>API</code></strong> 代表的始终具体的规范。为什么要这样呢？主要是为了更贴合<a href="https://go-micro.dev/" target="_blank" rel="noopener">官方文档</a>，有可能我理解的不够准确。</p>
+</blockquote>
+<img src="//wolferhua.gitee.io/blog/images/go-micro-book/apigateway.jpg"> 
+
+<p>API网关可以为每个客户端公开不同的API，而不是提供一个一刀切的API。</p>
+<h4 id="前端的后端API"><a href="#前端的后端API" class="headerlink" title="前端的后端API"></a>前端的后端API</h4><p>该模式的一个变体是前端模式的后端。它为每种客户端定义了一个单独的API网关。</p>
+<img src="//wolferhua.gitee.io/blog/images/go-micro-book/bffe.png"> 
+
+<p>在本例中，有三种客户端:web应用程序、移动应用程序和外部第三方应用程序。有三种不同的应用编程接口网关。每一个都为它的客户提供了一个应用编程接口。</p>
+<h2 id="Micro-API-1"><a href="#Micro-API-1" class="headerlink" title="Micro API"></a>Micro API</h2><p>通过服务发现，Micro API以http方式，将请求动态路由到具体的后台服务接口。</p>
+<img src="//wolferhua.gitee.io/blog/images/go-micro-book/microapi.png"> 
+
+
+<p>所以<strong>API</strong>本质上就一个服务网关，它具备动态路由、服务发现的能力，以HTTP方式把外界请求映射到本地微服务，以对外提供服务。</p>
+<p>通过服务发现，配合内置的命名空间（Namespace）【我们之后会讲解go-micro 中使用的非常多】规则，<strong>API</strong>可以把请求url解析映射到匹配该命名空间规则的服务接口。</p>
+<p>在Micro体系中，服务都会有自己的命名空间，而<strong>API</strong>的默认命名空间是<strong>go.micro.api</strong>。通常，部署在其后提供具体接口的微服务，我们会默认按照<br>Micro风格将它们的命名空间设置为<strong>go.micro.api.example</strong>的样式，<strong>example</strong>便是具体的服务名，如果需要改动这个值，在启动时指定<br><code>--namespace=指定名称</code>指令即可。</p>
+<h3 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 默认的端口是8080</span></span><br><span class="line">micro api</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2020-02-04 19:04:20 [api] Registering API Default Handler at /</span></span><br><span class="line"><span class="comment"># 2020-02-04 19:04:20 [api] HTTP API Listening on [::]:8080</span></span><br><span class="line"><span class="comment"># 2020-02-04 19:04:20 [api] Starting [service] go.micro.api</span></span><br><span class="line"><span class="comment"># 2020-02-04 19:04:20 [api] Server [grpc] Listening on [::]:37275</span></span><br><span class="line"><span class="comment"># 2020-02-04 19:04:20 [api] Registry [mdns] Registering node: go.micro.api-bdbf0099-282a-4b65-bb02-5ad48573c910</span></span><br></pre></td></tr></table></figure>
+
+<p>另外，API也使用了<a href="https://github.com/micro/go-api" target="_blank" rel="noopener">go-api</a>，这样，它的接口handler处理器也是可以配置的。</p>
+<h1 id="Handlers"><a href="#Handlers" class="headerlink" title="Handlers"></a>Handlers</h1><p>Handler负责持有并管理HTTP请求路由。</p>
+<p>默认的handler使用从注册中心获取的端口元数据来决定指向服务的路由，如果路由不匹配，就会回退到使用”rpc” hander。</p>
+<p>API有如下方法可以配置请求handler：</p>
+<table>
+<thead>
+<tr>
+<th>-</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>rpc</td>
+<td>通过RPC向go-micro应用转送请求，只接收GET和POST请求，GET转发<code>RawQuery</code>，POST转发<code>Body</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>api</td>
+<td>与rpc差不多，但是会把完整的http头封装向下传送，不限制请求方法</td>
+</tr>
+<tr>
+<td>3</td>
+<td>http或proxy</td>
+<td>以反向代理的方式使用<strong>API</strong>，相当于把普通的web应用部署在<strong>API</strong>之后，让外界像调api接口一样调用web服务</td>
+</tr>
+<tr>
+<td>4</td>
+<td>web</td>
+<td>与http差不多，但是支持websocket</td>
+</tr>
+<tr>
+<td>5</td>
+<td>event</td>
+<td>代理event事件服务类型的请求</td>
+</tr>
+<tr>
+<td>6</td>
+<td>meta*</td>
+<td>默认值，元数据，通过在代码中的<code>Endpoint</code>配置选择使用上述中的某一个处理器，默认RPC</td>
+</tr>
+</tbody></table>
+<ul>
+<li>重点讲一下rpc和api两种类型的区别，它们的区别就在于，rpc不会把请求头信息封装传下去，而api会。</li>
+<li>meta，并无此模式，只是对api、rpc、proxy、web等模式的扩展使用方法。</li>
+<li><code>Endpoint</code>在路由中会优先匹配，所以使用rpc或api模式同样可以使用此方法定义灵活的路由。</li>
+<li>版本（V1）无法支持多个handler并存运行</li>
+</ul>
+<h2 id="请求映射"><a href="#请求映射" class="headerlink" title="请求映射"></a>请求映射</h2><h3 id="RPC-API类型"><a href="#RPC-API类型" class="headerlink" title="RPC/API类型"></a>RPC/API类型</h3><p>Micro内部有将http请求路径映射到服务的机制，映射规则可以通过下表介绍</p>
+<table>
+<thead>
+<tr>
+<th>http路径</th>
+<th>后台服务</th>
+<th>接口方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>/foo/bar</td>
+<td>go.micro.api.foo</td>
+<td>Foo.Bar</td>
+</tr>
+<tr>
+<td>/foo/bar/baz</td>
+<td>go.micro.api.foo</td>
+<td>Bar.Baz</td>
+</tr>
+<tr>
+<td>/foo/bar/baz/cat</td>
+<td>go.micro.api.foo.bar</td>
+<td>Baz.Cat</td>
+</tr>
+</tbody></table>
+<p>默认的命名空间是<strong>go.micro.api</strong>，上面说过可以通过<code>--namespace</code>指令自定义。</p>
+<p>而有些带版本号的路径，也可以映射到服务名上</p>
+<table>
+<thead>
+<tr>
+<th>请求路径</th>
+<th>后台服务</th>
+<th>接口方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>/foo/bar</td>
+<td>go.micro.api.foo</td>
+<td>Foo.Bar</td>
+</tr>
+<tr>
+<td>/v1/foo/bar</td>
+<td>go.micro.api.v1.foo</td>
+<td>Foo.Bar</td>
+</tr>
+<tr>
+<td>/v1/foo/bar/baz</td>
+<td>go.micro.api.v1.foo</td>
+<td>Bar.Baz</td>
+</tr>
+<tr>
+<td>/v2/foo/bar</td>
+<td>go.micro.api.v2.foo</td>
+<td>Foo.Bar</td>
+</tr>
+<tr>
+<td>/v2/foo/bar/baz</td>
+<td>go.micro.api.v2.foo</td>
+<td>Bar.Baz</td>
+</tr>
+</tbody></table>
+<p>从上面的映射规则中可以看出，<strong>RPC/API</strong>模式下，路径后面的两个参数会被组合成Golang公共方法路径名，而剩下的会加上命名空间前缀组成服务名。比如：</p>
+<p><code>/v1/foo/bar/baz</code>，其中<code>bar/baz</code>首字母大写转成<code>Bar.Baz</code>方法路径；剩下的<code>/v1/foo/</code>，附加上命名空间前缀<code>go.micro.api</code>组成<br><code>go.micro.api.v1.foo</code>。</p>
+<h3 id="Proxy类型"><a href="#Proxy类型" class="headerlink" title="Proxy类型"></a>Proxy类型</h3><p>如果我们启动<strong>API</strong>时传指令<code>--handler=http</code>，那么<strong>API</strong>便会反向代理请求到具有API命名空间的后台服务中。</p>
+<p>比如：</p>
+<table>
+<thead>
+<tr>
+<th>请求路径</th>
+<th>服务</th>
+<th>后台服务路径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>/greeter</td>
+<td>go.micro.api.greeter</td>
+<td>/greeter</td>
+</tr>
+<tr>
+<td>/greeter/:name</td>
+<td>go.micro.api.greeter</td>
+<td>/greeter/:name</td>
+</tr>
+</tbody></table>
+<h3 id="Event类型"><a href="#Event类型" class="headerlink" title="Event类型"></a>Event类型</h3><p>启动<strong>API</strong>时传指令<code>--handler=event</code>，那么<strong>API</strong>便会反向代理请求到具有API命名空间的后台事件消费服务中。</p>
+<p>比如（命名空间设置为go.micro.evt）：</p>
+<table>
+<thead>
+<tr>
+<th>请求路径</th>
+<th>服务</th>
+<th>方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>/user/login</td>
+<td>go.micro.evt.user</td>
+<td>侦听器对象（示例中的new(Event)）所有公共方法，且方法要有ctx和事件参数</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>如果看到这里，觉得有点绕。别着急接着看，接下来我们将自己实现这些 <code>handler</code>。</p>
+</blockquote>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="/2020/02/04/go-micro-book4/" title="Go-Micro学习笔记 - 4. MicroAPI(API网关)" target="_blank" rel="external">https://wolferhua.github.io/2020/02/04/go-micro-book4/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://wolferhua.anycps.com/" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://wolferhua.anycps.com/" target="_blank"><span class="text-dark">小码侠</span><small class="ml-1x">Developer</small></a></h3>
+        <div>Golang、 PHP、 Java、 vue. js 手到擒来。服务器运维更是不在话下 shell、 Docker、 Zabbix、 Redis、 Elasticsearch、 MongoDb、 MySql……</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+           
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2020/02/04/go-micro-book3/" title="Go-Micro学习笔记 - 3. 编写服务"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2020/02/05/go-micro-book4.1/" title="Go-Micro学习笔记 - 4.1 MicroAPI 之 api"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn collapsed" data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">
+        <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/wolferhua" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="http://weibo.com/wolferhua" target="_blank" title="Weibo" data-toggle=tooltip data-placement=top><i class="icon icon-weibo"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        &copy; 2020 wolferhua
+        
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+
+    
+        <span class="copyright">
+            <span id="busuanzi_container_site_pv">
+                PV： <span id="busuanzi_value_site_pv">0</span>
+            </span>
+            <span id="busuanzi_container_site_uv">
+                UV： <span id="busuanzi_value_site_uv">0</span>
+            </span>
+        </span>
+    
+
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            if(!window.location ||!window.location.host ||window.location.host!="wolferhua.anycps.com") return;
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?4d4b0690176b0a709fb4d5c236e5136c";
+          var s = document.getElementsByTagName("script")[0]; 
+          s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        }
+        else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+    </script>
+        
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+<script src="/js/plugin.min.js"></script>
+<script src="/js/application.js"></script>
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+
+    <!-- 
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+ -->
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+   
+    
+  <!-- <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css"> -->
+  <script src="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/blueimp-md5@2.10.0/js/md5.min.js"></script>
+  <script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'a1f0b1bed343d82573b2',
+    clientSecret: '560c2b0f6e1eef7a1b0f3ea228ccb75572e63a44',
+    repo: 'gitalk-github',
+    owner: 'wolferhua',
+    admin: ['wolferhua'],
+    id: md5(location.pathname),
+    distractionFreeMode: true
+  })
+  gitalk.render('comments')
+  </script>
+
+      
+
+
+
+
+
+
+
+
+    
+<script>
+    var _mtac = {"performanceMonitor":1,"senseQuery":1};
+    (function() {
+        var mta = document.createElement("script");
+        mta.src = "//pingjs.qq.com/h5/stats.js?v2.0.4";
+        mta.setAttribute("name", "MTAH5");
+        mta.setAttribute("sid", "500683241");
+        mta.setAttribute("cid", "500683242");
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(mta, s);
+    })();
+</script>
+ 
+
+</body>
+</html>

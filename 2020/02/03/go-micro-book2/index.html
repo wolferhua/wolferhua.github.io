@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+<!-- 搜狗验证 -->
+  <meta name="sogou_site_verification" content="kkFBWNxy5B">
+
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000">
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top">
+  
+  
+  <title>Go-Micro学习笔记 - 2. micro 依赖、工具 安装 | 小码侠</title>
+  <meta name="description" content="本笔记基于go-micro/v2所以笔记中会多次出现v2引用，如果使用发现问题，请排查你的go-micro，micro，protoc-gen-micro版本是否匹配。  go依赖1234567891011# 解决golang.org/x/xxx 不能下载的问题。mkdir -p $GOPATH/src/golang.org/xmkdir -p $GOPATH/src/google.golang.">
+<meta name="keywords" content="go,micro,microservice">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Go-Micro学习笔记 - 2. micro 依赖、工具 安装">
+<meta property="og:url" content="https://wolferhua.github.io/2020/02/03/go-micro-book2/index.html">
+<meta property="og:site_name" content="小码侠">
+<meta property="og:description" content="本笔记基于go-micro/v2所以笔记中会多次出现v2引用，如果使用发现问题，请排查你的go-micro，micro，protoc-gen-micro版本是否匹配。  go依赖1234567891011# 解决golang.org/x/xxx 不能下载的问题。mkdir -p $GOPATH/src/golang.org/xmkdir -p $GOPATH/src/google.golang.">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-03-17T14:41:45.211Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Go-Micro学习笔记 - 2. micro 依赖、工具 安装">
+<meta name="twitter:description" content="本笔记基于go-micro/v2所以笔记中会多次出现v2引用，如果使用发现问题，请排查你的go-micro，micro，protoc-gen-micro版本是否匹配。  go依赖1234567891011# 解决golang.org/x/xxx 不能下载的问题。mkdir -p $GOPATH/src/golang.org/xmkdir -p $GOPATH/src/google.golang.">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://wolferhua.github.io/2020/02/03/go-micro-book2/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="小码侠" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+  
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.css">
+  
+</head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://wolferhua.anycps.com/" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">小码侠</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Chengdu, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav menu-highlight">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/wolferhua" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="http://weibo.com/wolferhua" target="_blank" title="Weibo" data-toggle=tooltip data-placement=top><i class="icon icon-weibo"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a><span class="category-list-count">11</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/go/">go</a><span class="category-list-count">9</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/go/micro/">micro</a><span class="category-list-count">9</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/kubernetes/">kubernetes</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/">leetcode</a><span class="category-list-count">8</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/array/">array</a><span class="category-list-count">8</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/linux/">linux</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/linux/vagrant/">vagrant</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/protobuf/">protobuf</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/面试/">面试</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/array/">array</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/leetcode/">leetcode</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/micro/">micro</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/microservice/">microservice</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/protobuf/">protobuf</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/array/" style="font-size: 13.25px;">array</a> <a href="/tags/docker/" style="font-size: 13.75px;">docker</a> <a href="/tags/go/" style="font-size: 13.5px;">go</a> <a href="/tags/golang/" style="font-size: 13.25px;">golang</a> <a href="/tags/java/" style="font-size: 13px;">java</a> <a href="/tags/leetcode/" style="font-size: 13.25px;">leetcode</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/micro/" style="font-size: 13.5px;">micro</a> <a href="/tags/microservice/" style="font-size: 13.5px;">microservice</a> <a href="/tags/nginx/" style="font-size: 13px;">nginx</a> <a href="/tags/protobuf/" style="font-size: 13px;">protobuf</a> <a href="/tags/ssh/" style="font-size: 13px;">ssh</a> <a href="/tags/vagrant/" style="font-size: 13px;">vagrant</a> <a href="/tags/面试/" style="font-size: 13px;">面试</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">十月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">九月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/linux/">linux</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/linux/vagrant/">vagrant</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/13/vagrant-guide-1/" class="title">Vagrant指南</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-13T15:05:17.000Z" itemprop="datePublished">2020-02-13</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/12/go-micro-book4-5/" class="title">Go-Micro学习笔记 - 4.5 MicroAPI 之 meta*</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-12T06:47:44.000Z" itemprop="datePublished">2020-02-12</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/10/1go-micro-book4-4/" class="title">Go-Micro学习笔记 - 4.4 MicroAPI 之 event</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-10T11:30:59.000Z" itemprop="datePublished">2020-02-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/10/2go-micro-book4-3/" class="title">Go-Micro学习笔记 - 4.3 MicroAPI 之 web 、http</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-10T11:30:59.000Z" itemprop="datePublished">2020-02-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/06/go-micro-book4-2/" class="title">Go-Micro学习笔记 - 4.2 MicroAPI 之 rpc</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-06T09:19:22.000Z" itemprop="datePublished">2020-02-06</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<aside class="sidebar sidebar-toc collapse" id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#go依赖"><span class="toc-number">1.</span> <span class="toc-text">go依赖</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#go-micro"><span class="toc-number">2.</span> <span class="toc-text">go-micro</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#micro-工具包安装"><span class="toc-number">3.</span> <span class="toc-text">micro 工具包安装</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Protobuf"><span class="toc-number">4.</span> <span class="toc-text">Protobuf</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#服务发现"><span class="toc-number">5.</span> <span class="toc-text">服务发现</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Multicast-DNS"><span class="toc-number">5.1.</span> <span class="toc-text">Multicast DNS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#etcd"><span class="toc-number">5.2.</span> <span class="toc-text">etcd</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#consul"><span class="toc-number">5.3.</span> <span class="toc-text">consul</span></a></li></ol></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-go-micro-book2" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Go-Micro学习笔记 - 2. micro 依赖、工具 安装
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/02/03/go-micro-book2/" class="article-date">
+	  <time datetime="2020-02-03T07:41:24.000Z" itemprop="datePublished">2020-02-03</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/go/">go</a>►<a class="article-category-link" href="/categories/go/micro/">micro</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link" href="/tags/go/">go</a>, <a class="article-tag-link" href="/tags/micro/">micro</a>, <a class="article-tag-link" href="/tags/microservice/">microservice</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/02/03/go-micro-book2/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 661(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 3(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <blockquote>
+<p>本笔记基于<code>go-micro/v2</code>所以笔记中会多次出现<code>v2</code>引用，如果使用发现问题，请排查你的<code>go-micro</code>，<code>micro</code>，<code>protoc-gen-micro</code>版本是否匹配。</p>
+</blockquote>
+<h1 id="go依赖"><a href="#go依赖" class="headerlink" title="go依赖"></a>go依赖</h1><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 解决golang.org/x/xxx 不能下载的问题。</span></span><br><span class="line">mkdir -p <span class="variable">$GOPATH</span>/src/golang.org/x</span><br><span class="line">mkdir -p <span class="variable">$GOPATH</span>/src/google.golang.org</span><br><span class="line">git <span class="built_in">clone</span> https://github.com/golang/text.git <span class="variable">$GOPATH</span>/src/golang.org/x/text</span><br><span class="line">git <span class="built_in">clone</span> https://github.com/golang/tools.git <span class="variable">$GOPATH</span>/src/golang.org/x/tools</span><br><span class="line">git <span class="built_in">clone</span> https://github.com/golang/net.git <span class="variable">$GOPATH</span>/src/golang.org/x/net</span><br><span class="line">git <span class="built_in">clone</span> https://github.com/golang/crypto.git <span class="variable">$GOPATH</span>/src/golang.org/x/crypto</span><br><span class="line">git <span class="built_in">clone</span> https://github.com/golang/exp.git <span class="variable">$GOPATH</span>/src/golang.org/x/exp</span><br><span class="line">git <span class="built_in">clone</span> https://github.com/grpc/grpc-go.git <span class="variable">$GOPATH</span>/src/google.golang.org/grpc</span><br><span class="line">git <span class="built_in">clone</span> https://github.com/googleapis/go-genproto.git  <span class="variable">$GOPATH</span>/src/google.golang.org/genproto</span><br><span class="line">git <span class="built_in">clone</span> https://github.com/googleapis/google-api-go-client.git  <span class="variable">$GOPATH</span>/src/google.golang.org/api</span><br></pre></td></tr></table></figure>
+
+<p><strong>或者在gomod文件中写下如下指令：</strong></p>
+<blockquote>
+<p>这个操作只针对某个module生效，并不是全局的。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">replace golang.org/x/text =&gt; github.com/golang/text latest </span><br><span class="line">replace golang.org/x/tools =&gt; github.com/golang/tools latest </span><br><span class="line">replace golang.org/x/net =&gt; github.com/golang/net latest </span><br><span class="line">replace golang.org/x/crypto =&gt; github.com/golang/crypto latest </span><br><span class="line">replace golang.org/x/exp =&gt; github.com/golang/exp  latest </span><br><span class="line">replace cloud.google.com/go =&gt; github.com/googleapis/google-cloud-go latest</span><br><span class="line">replace google.golang.org/grpc =&gt; github.com/grpc/grpc-go latest </span><br><span class="line">replace google.golang.org/genproto =&gt; github.com/googleapis/go-genproto latest</span><br><span class="line">replace google.golang.org/api =&gt; github.com/googleapis/google-api-go-client latest</span><br></pre></td></tr></table></figure>
+
+<h1 id="go-micro"><a href="#go-micro" class="headerlink" title="go-micro"></a>go-micro</h1><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">go get github.com/micro/go-micro/v2</span><br></pre></td></tr></table></figure>
+
+<h1 id="micro-工具包安装"><a href="#micro-工具包安装" class="headerlink" title="micro 工具包安装"></a>micro 工具包安装</h1><blockquote>
+<p>Micro是查询和访问微服务的工具包</p>
+</blockquote>
+<ul>
+<li>http到rpc的API网关</li>
+<li>Web微服务的Web代理</li>
+<li>Sidecar作为服务网格</li>
+<li>用于命令行访问的CLI</li>
+<li>Bot通过Slack进行查询</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">go get github.com/micro/micro/v2</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装完成测试</span></span><br><span class="line">micro -v</span><br><span class="line"><span class="comment"># micro version 2.0.0</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="Protobuf"><a href="#Protobuf" class="headerlink" title="Protobuf"></a>Protobuf</h1><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">go get github.com/micro/protobuf/&#123;proto,protoc-gen-go&#125;</span><br><span class="line">go get github.com/micro/protoc-gen-micro/v2</span><br><span class="line"></span><br><span class="line"><span class="comment">## protoc 安装</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#### LINUX ###</span></span><br><span class="line">wget https://github.com/protocolbuffers/protobuf/releases/download/v3.11.3/protoc-3.11.3-linux-x86_64.zip -O <span class="variable">$GOPATH</span>/protoc.zip</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#### Mac OS ###</span></span><br><span class="line">wget https://github.com/protocolbuffers/protobuf/releases/download/v3.11.3/protoc-3.11.3-osx-x86_64.zip -O <span class="variable">$GOPATH</span>/protoc.zip</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">## 解压</span></span><br><span class="line">unzip <span class="variable">$GOPATH</span>/protoc.zip -d <span class="variable">$GOPATH</span>/protoc</span><br><span class="line">cp  <span class="variable">$GOPATH</span>/protoc/bin/protoc  <span class="variable">$GOPATH</span>/bin</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装完成测试</span></span><br><span class="line"></span><br><span class="line">protoc --version</span><br><span class="line"><span class="comment"># libprotoc 3.11.3</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="服务发现"><a href="#服务发现" class="headerlink" title="服务发现"></a>服务发现</h1><h2 id="Multicast-DNS"><a href="#Multicast-DNS" class="headerlink" title="Multicast DNS"></a>Multicast DNS</h2><blockquote>
+<p>本地调试推荐使用</p>
+</blockquote>
+<p>我们可以使用<code>Multicast DNS</code>进行<code>零依赖</code>的服务发现</p>
+<p>将<code>--registry=mdns</code>或者<code>MICRO_REGISTRY=mdns</code>传递给任何命令，例如<code>micro --registry = mdns list services</code></p>
+<h2 id="etcd"><a href="#etcd" class="headerlink" title="etcd"></a>etcd</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> DATA_DIR=<span class="variable">$HOME</span>/data/etcd-data</span><br><span class="line">mkdir -p <span class="variable">$DATA_DIR</span></span><br><span class="line"><span class="built_in">export</span> NODE1=`本机ip地址`</span><br><span class="line">docker run \</span><br><span class="line">  -p 2379:2379 \</span><br><span class="line">  -p 2380:2380 \</span><br><span class="line">  --volume=<span class="variable">$&#123;DATA_DIR&#125;</span>:/etcd-data \</span><br><span class="line">  --name etcd quay.io/coreos/etcd:latest \</span><br><span class="line">  /usr/<span class="built_in">local</span>/bin/etcd \</span><br><span class="line">  --data-dir=/etcd-data --name node1 \</span><br><span class="line">  --initial-advertise-peer-urls http://<span class="variable">$&#123;NODE1&#125;</span>:2380 --listen-peer-urls http://<span class="variable">$&#123;NODE1&#125;</span>:2380 \</span><br><span class="line">  --advertise-client-urls http://<span class="variable">$&#123;NODE1&#125;</span>:2379 --listen-client-urls http://<span class="variable">$&#123;NODE1&#125;</span>:2379 \</span><br><span class="line">  --initial-cluster node1=http://<span class="variable">$&#123;NODE1&#125;</span>:2380</span><br></pre></td></tr></table></figure>
+
+<h2 id="consul"><a href="#consul" class="headerlink" title="consul"></a>consul</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -p 8600:8600 -p 8300:8300 -p 8301:8301 -p 8302:8302 -p 8301:8301/udp -p 8302:8302/udp consul</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="/2020/02/03/go-micro-book2/" title="Go-Micro学习笔记 - 2. micro 依赖、工具 安装" target="_blank" rel="external">https://wolferhua.github.io/2020/02/03/go-micro-book2/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://wolferhua.anycps.com/" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://wolferhua.anycps.com/" target="_blank"><span class="text-dark">小码侠</span><small class="ml-1x">Developer</small></a></h3>
+        <div>Golang、 PHP、 Java、 vue. js 手到擒来。服务器运维更是不在话下 shell、 Docker、 Zabbix、 Redis、 Elasticsearch、 MongoDb、 MySql……</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+           
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2020/02/03/go-micro-book1/" title="Go-Micro学习笔记 - 1. 基础环境配置"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2020/02/04/go-micro-book3/" title="Go-Micro学习笔记 - 3. 编写服务"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn collapsed" data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">
+        <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/wolferhua" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="http://weibo.com/wolferhua" target="_blank" title="Weibo" data-toggle=tooltip data-placement=top><i class="icon icon-weibo"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        &copy; 2020 wolferhua
+        
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+
+    
+        <span class="copyright">
+            <span id="busuanzi_container_site_pv">
+                PV： <span id="busuanzi_value_site_pv">0</span>
+            </span>
+            <span id="busuanzi_container_site_uv">
+                UV： <span id="busuanzi_value_site_uv">0</span>
+            </span>
+        </span>
+    
+
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            if(!window.location ||!window.location.host ||window.location.host!="wolferhua.anycps.com") return;
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?4d4b0690176b0a709fb4d5c236e5136c";
+          var s = document.getElementsByTagName("script")[0]; 
+          s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        }
+        else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+    </script>
+        
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+<script src="/js/plugin.min.js"></script>
+<script src="/js/application.js"></script>
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+
+    <!-- 
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+ -->
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+   
+    
+  <!-- <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css"> -->
+  <script src="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/blueimp-md5@2.10.0/js/md5.min.js"></script>
+  <script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'a1f0b1bed343d82573b2',
+    clientSecret: '560c2b0f6e1eef7a1b0f3ea228ccb75572e63a44',
+    repo: 'gitalk-github',
+    owner: 'wolferhua',
+    admin: ['wolferhua'],
+    id: md5(location.pathname),
+    distractionFreeMode: true
+  })
+  gitalk.render('comments')
+  </script>
+
+      
+
+
+
+
+
+
+
+
+    
+<script>
+    var _mtac = {"performanceMonitor":1,"senseQuery":1};
+    (function() {
+        var mta = document.createElement("script");
+        mta.src = "//pingjs.qq.com/h5/stats.js?v2.0.4";
+        mta.setAttribute("name", "MTAH5");
+        mta.setAttribute("sid", "500683241");
+        mta.setAttribute("cid", "500683242");
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(mta, s);
+    })();
+</script>
+ 
+
+</body>
+</html>

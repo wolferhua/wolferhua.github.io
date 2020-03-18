@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+<!-- 搜狗验证 -->
+  <meta name="sogou_site_verification" content="kkFBWNxy5B">
+
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000">
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top">
+  
+  
+  <title>kubernetes(k8s)安装记录-ubuntu18.04单master | 小码侠</title>
+  <meta name="description" content="安装基于ubuntu 18.04，镜像源为: https://developer.aliyun.com/mirror/ubuntu  配置要求   节点 配置（最低要求） IP 主机名称    master 2C2G 192.168.2.30 ubuntu-vm-30   worker1 1C1G 192.168.2.31 ubuntu-vm-31   worker2 1C1G 192.168.">
+<meta name="keywords" content="小码侠,golang,es,elastatics,docker,linux,java,vue.js,Redis,Mongodb">
+<meta property="og:type" content="article">
+<meta property="og:title" content="kubernetes(k8s)安装记录-ubuntu18.04单master">
+<meta property="og:url" content="https://wolferhua.github.io/2020/01/02/k8s-install/index.html">
+<meta property="og:site_name" content="小码侠">
+<meta property="og:description" content="安装基于ubuntu 18.04，镜像源为: https://developer.aliyun.com/mirror/ubuntu  配置要求   节点 配置（最低要求） IP 主机名称    master 2C2G 192.168.2.30 ubuntu-vm-30   worker1 1C1G 192.168.2.31 ubuntu-vm-31   worker2 1C1G 192.168.">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-03-04T06:01:28.955Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="kubernetes(k8s)安装记录-ubuntu18.04单master">
+<meta name="twitter:description" content="安装基于ubuntu 18.04，镜像源为: https://developer.aliyun.com/mirror/ubuntu  配置要求   节点 配置（最低要求） IP 主机名称    master 2C2G 192.168.2.30 ubuntu-vm-30   worker1 1C1G 192.168.2.31 ubuntu-vm-31   worker2 1C1G 192.168.">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://wolferhua.github.io/2020/01/02/k8s-install/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="小码侠" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+  
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.css">
+  
+</head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://wolferhua.anycps.com/" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">小码侠</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Chengdu, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav menu-highlight">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/wolferhua" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="http://weibo.com/wolferhua" target="_blank" title="Weibo" data-toggle=tooltip data-placement=top><i class="icon icon-weibo"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a><span class="category-list-count">11</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/go/">go</a><span class="category-list-count">9</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/go/micro/">micro</a><span class="category-list-count">9</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/kubernetes/">kubernetes</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/">leetcode</a><span class="category-list-count">8</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/array/">array</a><span class="category-list-count">8</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/linux/">linux</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/linux/vagrant/">vagrant</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/protobuf/">protobuf</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/面试/">面试</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/array/">array</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/leetcode/">leetcode</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/micro/">micro</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/microservice/">microservice</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/protobuf/">protobuf</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/array/" style="font-size: 13.25px;">array</a> <a href="/tags/docker/" style="font-size: 13.75px;">docker</a> <a href="/tags/go/" style="font-size: 13.5px;">go</a> <a href="/tags/golang/" style="font-size: 13.25px;">golang</a> <a href="/tags/java/" style="font-size: 13px;">java</a> <a href="/tags/leetcode/" style="font-size: 13.25px;">leetcode</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/micro/" style="font-size: 13.5px;">micro</a> <a href="/tags/microservice/" style="font-size: 13.5px;">microservice</a> <a href="/tags/nginx/" style="font-size: 13px;">nginx</a> <a href="/tags/protobuf/" style="font-size: 13px;">protobuf</a> <a href="/tags/ssh/" style="font-size: 13px;">ssh</a> <a href="/tags/vagrant/" style="font-size: 13px;">vagrant</a> <a href="/tags/面试/" style="font-size: 13px;">面试</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">十月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">九月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/linux/">linux</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/linux/vagrant/">vagrant</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/13/vagrant-guide-1/" class="title">Vagrant指南</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-13T15:05:17.000Z" itemprop="datePublished">2020-02-13</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/12/go-micro-book4-5/" class="title">Go-Micro学习笔记 - 4.5 MicroAPI 之 meta*</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-12T06:47:44.000Z" itemprop="datePublished">2020-02-12</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/10/1go-micro-book4-4/" class="title">Go-Micro学习笔记 - 4.4 MicroAPI 之 event</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-10T11:30:59.000Z" itemprop="datePublished">2020-02-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/10/2go-micro-book4-3/" class="title">Go-Micro学习笔记 - 4.3 MicroAPI 之 web 、http</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-10T11:30:59.000Z" itemprop="datePublished">2020-02-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/06/go-micro-book4-2/" class="title">Go-Micro学习笔记 - 4.2 MicroAPI 之 rpc</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-06T09:19:22.000Z" itemprop="datePublished">2020-02-06</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<aside class="sidebar sidebar-toc collapse" id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#配置要求"><span class="toc-number">1.</span> <span class="toc-text">配置要求</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#关闭防火墙"><span class="toc-number">1.0.1.</span> <span class="toc-text">关闭防火墙</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#关闭系统swap"><span class="toc-number">1.0.2.</span> <span class="toc-text">关闭系统swap</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#安装docker"><span class="toc-number">2.</span> <span class="toc-text">安装docker</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#修改docker-配置"><span class="toc-number">2.0.1.</span> <span class="toc-text">修改docker 配置</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#下载安装k8s"><span class="toc-number">3.</span> <span class="toc-text">下载安装k8s</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#初始化（仅运行于master）"><span class="toc-number">3.0.1.</span> <span class="toc-text">初始化（仅运行于master）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#配置kubectl"><span class="toc-number">3.0.2.</span> <span class="toc-text">配置kubectl</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#安装-calico"><span class="toc-number">3.0.3.</span> <span class="toc-text">安装 calico</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#检查初始化结果"><span class="toc-number">3.0.4.</span> <span class="toc-text">检查初始化结果</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#初始化Worker"><span class="toc-number">4.</span> <span class="toc-text">初始化Worker</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#获得加入命令"><span class="toc-number">4.0.1.</span> <span class="toc-text">获得加入命令</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#安装-Ingress-Controller"><span class="toc-number">5.</span> <span class="toc-text">安装 Ingress Controller</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#安装教程参考"><span class="toc-number">6.</span> <span class="toc-text">安装教程参考</span></a></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-k8s-install" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      kubernetes(k8s)安装记录-ubuntu18.04单master
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/01/02/k8s-install/" class="article-date">
+	  <time datetime="2020-01-02T08:17:12.000Z" itemprop="datePublished">2020-01-02</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/kubernetes/">kubernetes</a>
+  </span>
+
+        
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/01/02/k8s-install/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.3k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 6(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <blockquote>
+<p>安装基于ubuntu 18.04，镜像源为: <a href="https://developer.aliyun.com/mirror/ubuntu" target="_blank" rel="noopener">https://developer.aliyun.com/mirror/ubuntu</a></p>
+</blockquote>
+<h1 id="配置要求"><a href="#配置要求" class="headerlink" title="配置要求"></a>配置要求</h1><table>
+<thead>
+<tr>
+<th>节点</th>
+<th>配置（最低要求）</th>
+<th>IP</th>
+<th>主机名称</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>master</td>
+<td>2C2G</td>
+<td>192.168.2.30</td>
+<td>ubuntu-vm-30</td>
+</tr>
+<tr>
+<td>worker1</td>
+<td>1C1G</td>
+<td>192.168.2.31</td>
+<td>ubuntu-vm-31</td>
+</tr>
+<tr>
+<td>worker2</td>
+<td>1C1G</td>
+<td>192.168.2.32</td>
+<td>ubuntu-vm-32</td>
+</tr>
+</tbody></table>
+<h3 id="关闭防火墙"><a href="#关闭防火墙" class="headerlink" title="关闭防火墙"></a>关闭防火墙</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ufw <span class="built_in">disable</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="关闭系统swap"><a href="#关闭系统swap" class="headerlink" title="关闭系统swap"></a>关闭系统swap</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 修改/etc/fstab 注释掉swap项目</span></span><br><span class="line">sudo swapoff -a</span><br></pre></td></tr></table></figure>
+
+<h1 id="安装docker"><a href="#安装docker" class="headerlink" title="安装docker"></a>安装docker</h1><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># step 1: 安装必要的一些系统工具</span></span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt -y install apt-transport-https ca-certificates curl software-properties-common</span><br><span class="line"><span class="comment"># step 2: 安装GPG证书</span></span><br><span class="line">curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -</span><br><span class="line"><span class="comment"># Step 3: 写入软件源信息</span></span><br><span class="line">sudo add-apt-repository <span class="string">"deb [arch=amd64] https://mirrors.aliyun.com/docker-ce/linux/ubuntu <span class="variable">$(lsb_release -cs)</span> stable"</span></span><br><span class="line"><span class="comment"># Step 4: 更新并安装Docker-CE</span></span><br><span class="line">sudo apt -y update</span><br><span class="line">sudo apt -y install docker-ce</span><br><span class="line"><span class="comment"># Step 5: 将当前用户加入用户组</span></span><br><span class="line">sudo usermod -a -G docker <span class="variable">$USER</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="修改docker-配置"><a href="#修改docker-配置" class="headerlink" title="修改docker 配置"></a>修改docker 配置</h3><blockquote>
+<p><a href="https://kubernetes.io/docs/setup/production-environment/container-runtimes/" target="_blank" rel="noopener">https://kubernetes.io/docs/setup/production-environment/container-runtimes/</a></p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 切换账号 </span></span><br><span class="line">sudo su</span><br><span class="line"><span class="comment"># 写入配置</span></span><br><span class="line">cat &gt; /etc/docker/daemon.json &lt;&lt;EOF</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"exec-opts"</span>: [<span class="string">"native.cgroupdriver=systemd"</span>],</span><br><span class="line">  <span class="string">"log-driver"</span>: <span class="string">"json-file"</span>,</span><br><span class="line">  <span class="string">"log-opts"</span>: &#123;</span><br><span class="line">    <span class="string">"max-size"</span>: <span class="string">"100m"</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">"storage-driver"</span>: <span class="string">"overlay2"</span></span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">mkdir -p /etc/systemd/system/docker.service.d</span><br><span class="line"></span><br><span class="line"><span class="comment"># 重启 docker.</span></span><br><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl restart docker</span><br></pre></td></tr></table></figure>
+
+<h1 id="下载安装k8s"><a href="#下载安装k8s" class="headerlink" title="下载安装k8s"></a>下载安装k8s</h1><blockquote>
+<p>配置apt源。</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 更新&amp;&amp;安装必要的一些系统工具</span></span><br><span class="line">apt update &amp;&amp; apt install -y apt-transport-https</span><br><span class="line"><span class="comment"># 安装GPG证书</span></span><br><span class="line">curl https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add - </span><br><span class="line"><span class="comment"># 配置k8s源</span></span><br><span class="line">cat &lt;&lt;EOF &gt;/etc/apt/sources.list.d/kubernetes.list</span><br><span class="line">deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main</span><br><span class="line">EOF</span><br><span class="line"><span class="comment"># 配置以后更新</span></span><br><span class="line">apt update</span><br><span class="line">apt install -y kubelet kubeadm kubectl</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>所有机器都必须安装 <code>docker</code>、<code>kubelet</code>、<code>kubeadm</code>、<code>kubectl</code></p>
+</blockquote>
+<h3 id="初始化（仅运行于master）"><a href="#初始化（仅运行于master）" class="headerlink" title="初始化（仅运行于master）"></a>初始化（仅运行于master）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">sudo kubeadm init --apiserver-advertise-address 192.168.2.30 --pod-network-cidr=10.244.0.0/16</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># init 常用主要参数：</span></span><br><span class="line"><span class="comment"># –kubernetes-version: 指定Kubenetes版本，如果不指定该参数，会从google网站下载最新的版本信息。 v1.17.0</span></span><br><span class="line"><span class="comment"># –pod-network-cidr: 指定pod网络的IP地址范围，它的值取决于你在下一步选择的哪个网络网络插件，比如我在本文中使用的是 calico 网络，需要指定为10.244.0.0/16。</span></span><br><span class="line"><span class="comment"># –apiserver-advertise-address: 指定master服务发布的Ip地址，如果不指定，则会自动检测网络接口，通常是内网IP。</span></span><br><span class="line"><span class="comment"># --image-repository： 指定docker镜像拉取。</span></span><br><span class="line"></span><br><span class="line">sudo kubeadm init --image-repository registry.aliyuncs.com/google_containers  --apiserver-advertise-address 192.168.2.30 --kubernetes-version v1.17.0 --pod-network-cidr=10.240.0.0/16</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Your Kubernetes control-plane has initialized successfully!</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># To start using your cluster, you need to run the following as a regular user:</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#   mkdir -p $HOME/.kube</span></span><br><span class="line"><span class="comment">#   sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config</span></span><br><span class="line"><span class="comment">#   sudo chown $(id -u):$(id -g) $HOME/.kube/config</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># You should now deploy a pod network to the cluster.</span></span><br><span class="line"><span class="comment"># Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:</span></span><br><span class="line"><span class="comment">#   https://kubernetes.io/docs/concepts/cluster-administration/addons/</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Then you can join any number of worker nodes by running the following on each as root:</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># kubeadm join 192.168.2.30:6443 --token vgnn2t.kmq1gqchcwobv7lj \</span></span><br><span class="line"><span class="comment">#     --discovery-token-ca-cert-hash sha256:66d4cba6bad6daba940a87ee29a190386584d8bdeb77145b906914a8c2dd9a64</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="配置kubectl"><a href="#配置kubectl" class="headerlink" title="配置kubectl"></a>配置kubectl</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p $HOME/.kube</span><br><span class="line">sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config</span><br><span class="line">sudo chown $(id -u):$(id -g) $HOME/.kube/config</span><br></pre></td></tr></table></figure>
+
+<h3 id="安装-calico"><a href="#安装-calico" class="headerlink" title="安装 calico"></a>安装 calico</h3><blockquote>
+<p>Calico是一个纯三层的方案，为虚机及容器提供多主机间通信，没有使用重叠网络（如flannel）驱动，采用虚拟路由代替虚拟交换，每一台虚拟路由器通过BGP协议传播可达信息（路由）到其他虚拟或物理路由器。</p>
+</blockquote>
+<p><a href="https://www.cnblogs.com/netonline/p/9720279.html" target="_blank" rel="noopener">https://www.cnblogs.com/netonline/p/9720279.html</a></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment"># 参考文档 https://docs.projectcalico.org/v3.10/getting-started/kubernetes/</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">cd</span> <span class="variable">$HOME</span>/.kube</span><br><span class="line">wget https://kuboard.cn/install-script/calico/calico-3.10.2.yaml</span><br><span class="line">sed -i <span class="string">"s#192\.168\.0\.0/16#10\.244\.0\.0/16#"</span> calico-3.10.2.yaml</span><br><span class="line">kubectl apply -f calico-3.10.2.yaml</span><br></pre></td></tr></table></figure>
+
+<h3 id="检查初始化结果"><a href="#检查初始化结果" class="headerlink" title="检查初始化结果"></a>检查初始化结果</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 只在 master 节点执行</span></span><br><span class="line"><span class="comment"># 执行如下命令，等待 3-10 分钟，直到所有的容器组处于 Running 状态</span></span><br><span class="line">watch kubectl get pod -n kube-system -o wide</span><br><span class="line"><span class="comment"># 查看 master 节点初始化结果</span></span><br><span class="line">kubectl get nodes -o wide</span><br><span class="line"></span><br><span class="line"><span class="comment"># NAME      STATUS   ROLES    AGE   VERSION   INTERNAL-IP    EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME</span></span><br><span class="line"><span class="comment">#loyo-vm   Ready    master   15m   v1.17.0   192.168.2.30   &lt;none&gt;        Ubuntu 18.04.3 LTS   4.15.0-72-generic   docker://19.3.5</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="初始化Worker"><a href="#初始化Worker" class="headerlink" title="初始化Worker"></a>初始化Worker</h1><h3 id="获得加入命令"><a href="#获得加入命令" class="headerlink" title="获得加入命令"></a>获得加入命令</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在master节点执行</span></span><br><span class="line">kubeadm token create --<span class="built_in">print</span>-join-command</span><br><span class="line"></span><br><span class="line"><span class="comment"># 有效时间两小时</span></span><br><span class="line"><span class="comment"># W1231 07:24:53.712544    7649 validation.go:28] Cannot validate kube-proxy config - no validator is available</span></span><br><span class="line"><span class="comment"># W1231 07:24:53.713100    7649 validation.go:28] Cannot validate kubelet config - no validator is available</span></span><br><span class="line"><span class="comment"># kubeadm join 192.168.2.30:6443 --token 0zcj6i.ibrv1n0914oamhvf     --discovery-token-ca-cert-hash sha256:66d4cba6bad6daba940a87ee29a190386584d8bdeb77145b906914a8c2dd9a64</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## 执行加入</span></span><br><span class="line"></span><br><span class="line">sudo kubeadm join 192.168.2.30:6443 --token 0zcj6i.ibrv1n0914oamhvf     --discovery-token-ca-cert-hash sha256:66d4cba6bad6daba940a87ee29a190386584d8bdeb77145b906914a8c2dd9a64</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># W1231 07:25:29.249270    2005 join.go:346] [preflight] WARNING: JoinControlPane.controlPlane settings will be ignored when control-plane flag is not set.</span></span><br><span class="line"><span class="comment"># [preflight] Running pre-flight checks</span></span><br><span class="line"><span class="comment"># [preflight] Reading configuration from the cluster...</span></span><br><span class="line"><span class="comment"># [preflight] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -oyaml'</span></span><br><span class="line"><span class="comment"># [kubelet-start] Downloading configuration for the kubelet from the "kubelet-config-1.17" ConfigMap in the kube-system namespace</span></span><br><span class="line"><span class="comment"># [kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"</span></span><br><span class="line"><span class="comment"># [kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"</span></span><br><span class="line"><span class="comment"># [kubelet-start] Starting the kubelet</span></span><br><span class="line"><span class="comment"># [kubelet-start] Waiting for the kubelet to perform the TLS Bootstrap...</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># This node has joined the cluster:</span></span><br><span class="line"><span class="comment"># * Certificate signing request was sent to apiserver and a response was received.</span></span><br><span class="line"><span class="comment"># * The Kubelet was informed of the new secure connection details.</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Run 'kubectl get nodes' on the control-plane to see this node join the cluster.</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="安装-Ingress-Controller"><a href="#安装-Ingress-Controller" class="headerlink" title="安装 Ingress Controller"></a>安装 Ingress Controller</h1><p><a href="https://www.jianshu.com/p/595fd3fac7ff" target="_blank" rel="noopener">ingress介绍</a></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># master 上执行</span></span><br><span class="line"><span class="comment">#  如果打算用于生产环境，请参考 https://github.com/nginxinc/kubernetes-ingress/blob/v1.5.5/docs/installation.md 并根据您自己的情况做进一步定制</span></span><br><span class="line"></span><br><span class="line">kubectl apply -f https://kuboard.cn/install-script/v1.17.x/nginx-ingress.yaml</span><br></pre></td></tr></table></figure>
+
+<h1 id="安装教程参考"><a href="#安装教程参考" class="headerlink" title="安装教程参考"></a>安装教程参考</h1><ul>
+<li><a href="https://www.kuboard.cn/install/install-k8s.html" target="_blank" rel="noopener">使用kubeadm安装kubernetes_v1.17.x</a></li>
+<li><a href="https://www.jianshu.com/p/d18f7d3df53b" target="_blank" rel="noopener">k8s ubuntu18 安装</a></li>
+<li><a href="http://dockone.io/article/8722" target="_blank" rel="noopener">Kubernetes CNI网络最强对比：Flannel、Calico、Canal和Weave</a></li>
+</ul>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="/2020/01/02/k8s-install/" title="kubernetes(k8s)安装记录-ubuntu18.04单master" target="_blank" rel="external">https://wolferhua.github.io/2020/01/02/k8s-install/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://wolferhua.anycps.com/" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://wolferhua.anycps.com/" target="_blank"><span class="text-dark">小码侠</span><small class="ml-1x">Developer</small></a></h3>
+        <div>Golang、 PHP、 Java、 vue. js 手到擒来。服务器运维更是不在话下 shell、 Docker、 Zabbix、 Redis、 Elasticsearch、 MongoDb、 MySql……</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+           
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2019/10/26/linux-002-install/" title="Linux安装"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2020/02/03/go-micro-book1/" title="Go-Micro学习笔记 - 1. 基础环境配置"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn collapsed" data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">
+        <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/wolferhua" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="http://weibo.com/wolferhua" target="_blank" title="Weibo" data-toggle=tooltip data-placement=top><i class="icon icon-weibo"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        &copy; 2020 wolferhua
+        
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+
+    
+        <span class="copyright">
+            <span id="busuanzi_container_site_pv">
+                PV： <span id="busuanzi_value_site_pv">0</span>
+            </span>
+            <span id="busuanzi_container_site_uv">
+                UV： <span id="busuanzi_value_site_uv">0</span>
+            </span>
+        </span>
+    
+
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            if(!window.location ||!window.location.host ||window.location.host!="wolferhua.anycps.com") return;
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?4d4b0690176b0a709fb4d5c236e5136c";
+          var s = document.getElementsByTagName("script")[0]; 
+          s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        }
+        else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+    </script>
+        
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+<script src="/js/plugin.min.js"></script>
+<script src="/js/application.js"></script>
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+
+    <!-- 
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+ -->
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+   
+    
+  <!-- <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css"> -->
+  <script src="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/blueimp-md5@2.10.0/js/md5.min.js"></script>
+  <script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'a1f0b1bed343d82573b2',
+    clientSecret: '560c2b0f6e1eef7a1b0f3ea228ccb75572e63a44',
+    repo: 'gitalk-github',
+    owner: 'wolferhua',
+    admin: ['wolferhua'],
+    id: md5(location.pathname),
+    distractionFreeMode: true
+  })
+  gitalk.render('comments')
+  </script>
+
+      
+
+
+
+
+
+
+
+
+    
+<script>
+    var _mtac = {"performanceMonitor":1,"senseQuery":1};
+    (function() {
+        var mta = document.createElement("script");
+        mta.src = "//pingjs.qq.com/h5/stats.js?v2.0.4";
+        mta.setAttribute("name", "MTAH5");
+        mta.setAttribute("sid", "500683241");
+        mta.setAttribute("cid", "500683242");
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(mta, s);
+    })();
+</script>
+ 
+
+</body>
+</html>

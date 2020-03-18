@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+<!-- 搜狗验证 -->
+  <meta name="sogou_site_verification" content="kkFBWNxy5B">
+
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000">
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top">
+  
+  
+  <title>Linux简介 | 小码侠</title>
+  <meta name="description" content="Linux is not Unix。  Linux 内核最初只是由芬兰人林纳斯·托瓦兹（Linus Torvalds）在赫尔辛基大学上学时出于个人爱好而编写的。  当年 linus 就是因为接触到了unix而后才自己想开发一个简易的系统内核的，他开发的简易系统内核其实就是linux。当时linus 把开发的这个系统内核丢到网上提供大家下载，由于它的精致小巧，越来越多的爱好者去研究它。人们对这个内核">
+<meta name="keywords" content="linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux简介">
+<meta property="og:url" content="https://wolferhua.github.io/2019/10/26/linux-001-intro/index.html">
+<meta property="og:site_name" content="小码侠">
+<meta property="og:description" content="Linux is not Unix。  Linux 内核最初只是由芬兰人林纳斯·托瓦兹（Linus Torvalds）在赫尔辛基大学上学时出于个人爱好而编写的。  当年 linus 就是因为接触到了unix而后才自己想开发一个简易的系统内核的，他开发的简易系统内核其实就是linux。当时linus 把开发的这个系统内核丢到网上提供大家下载，由于它的精致小巧，越来越多的爱好者去研究它。人们对这个内核">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://wolferhua.gitee.io/blog/images/linux/unix_architecture.jpg">
+<meta property="og:image" content="https://wolferhua.gitee.io/blog/images/linux/LinuxVersion.png">
+<meta property="og:image" content="https://wolferhua.gitee.io/blog/images/linux/linux-family.jpg">
+<meta property="og:updated_time" content="2020-02-10T11:07:12.017Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux简介">
+<meta name="twitter:description" content="Linux is not Unix。  Linux 内核最初只是由芬兰人林纳斯·托瓦兹（Linus Torvalds）在赫尔辛基大学上学时出于个人爱好而编写的。  当年 linus 就是因为接触到了unix而后才自己想开发一个简易的系统内核的，他开发的简易系统内核其实就是linux。当时linus 把开发的这个系统内核丢到网上提供大家下载，由于它的精致小巧，越来越多的爱好者去研究它。人们对这个内核">
+<meta name="twitter:image" content="https://wolferhua.gitee.io/blog/images/linux/unix_architecture.jpg">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://wolferhua.github.io/2019/10/26/linux-001-intro/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="小码侠" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+  
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.css">
+  
+</head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://wolferhua.anycps.com/" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">小码侠</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Chengdu, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav menu-highlight">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/wolferhua" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="http://weibo.com/wolferhua" target="_blank" title="Weibo" data-toggle=tooltip data-placement=top><i class="icon icon-weibo"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a><span class="category-list-count">11</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/go/">go</a><span class="category-list-count">9</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/go/micro/">micro</a><span class="category-list-count">9</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/kubernetes/">kubernetes</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/">leetcode</a><span class="category-list-count">8</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/array/">array</a><span class="category-list-count">8</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/linux/">linux</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/linux/vagrant/">vagrant</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/protobuf/">protobuf</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/面试/">面试</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/array/">array</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/leetcode/">leetcode</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/micro/">micro</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/microservice/">microservice</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/protobuf/">protobuf</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/array/" style="font-size: 13.25px;">array</a> <a href="/tags/docker/" style="font-size: 13.75px;">docker</a> <a href="/tags/go/" style="font-size: 13.5px;">go</a> <a href="/tags/golang/" style="font-size: 13.25px;">golang</a> <a href="/tags/java/" style="font-size: 13px;">java</a> <a href="/tags/leetcode/" style="font-size: 13.25px;">leetcode</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/micro/" style="font-size: 13.5px;">micro</a> <a href="/tags/microservice/" style="font-size: 13.5px;">microservice</a> <a href="/tags/nginx/" style="font-size: 13px;">nginx</a> <a href="/tags/protobuf/" style="font-size: 13px;">protobuf</a> <a href="/tags/ssh/" style="font-size: 13px;">ssh</a> <a href="/tags/vagrant/" style="font-size: 13px;">vagrant</a> <a href="/tags/面试/" style="font-size: 13px;">面试</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">十月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">九月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/linux/">linux</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/linux/vagrant/">vagrant</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/13/vagrant-guide-1/" class="title">Vagrant指南</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-13T15:05:17.000Z" itemprop="datePublished">2020-02-13</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/12/go-micro-book4-5/" class="title">Go-Micro学习笔记 - 4.5 MicroAPI 之 meta*</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-12T06:47:44.000Z" itemprop="datePublished">2020-02-12</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/10/1go-micro-book4-4/" class="title">Go-Micro学习笔记 - 4.4 MicroAPI 之 event</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-10T11:30:59.000Z" itemprop="datePublished">2020-02-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/10/2go-micro-book4-3/" class="title">Go-Micro学习笔记 - 4.3 MicroAPI 之 web 、http</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-10T11:30:59.000Z" itemprop="datePublished">2020-02-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/06/go-micro-book4-2/" class="title">Go-Micro学习笔记 - 4.2 MicroAPI 之 rpc</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-06T09:19:22.000Z" itemprop="datePublished">2020-02-06</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<aside class="sidebar sidebar-toc collapse" id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Linux-is-not-Unix。"><span class="toc-number">1.</span> <span class="toc-text">Linux is not Unix。</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#发行版"><span class="toc-number">2.</span> <span class="toc-text">发行版</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#关系"><span class="toc-number">2.1.</span> <span class="toc-text">关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#区别"><span class="toc-number">2.2.</span> <span class="toc-text">区别</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Linux-思想"><span class="toc-number">3.</span> <span class="toc-text">Linux 思想</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1、-一切接皆文件"><span class="toc-number">3.1.</span> <span class="toc-text">1、 一切接皆文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2、-由众多功能单一的程序共同完成复杂任务"><span class="toc-number">3.2.</span> <span class="toc-text">2、 由众多功能单一的程序共同完成复杂任务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3、-尽量避免跟用户交互"><span class="toc-number">3.3.</span> <span class="toc-text">3、 尽量避免跟用户交互</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4、-使用文本文件保存配置信息"><span class="toc-number">3.4.</span> <span class="toc-text">4、 使用文本文件保存配置信息</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5、-提供机制，而非策略"><span class="toc-number">3.5.</span> <span class="toc-text">5、 提供机制，而非策略</span></a></li></ol></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-linux-001-intro" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Linux简介
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2019/10/26/linux-001-intro/" class="article-date">
+	  <time datetime="2019-10-26T06:02:19.000Z" itemprop="datePublished">2019-10-26</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/linux/">linux</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link" href="/tags/linux/">linux</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2019/10/26/linux-001-intro/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 833(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 2(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h1 id="Linux-is-not-Unix。"><a href="#Linux-is-not-Unix。" class="headerlink" title="Linux is not Unix。"></a>Linux is not Unix。</h1><img src="//wolferhua.gitee.io/blog/images/linux/unix_architecture.jpg">
+
+<p>Linux 内核最初只是由芬兰人林纳斯·托瓦兹（Linus Torvalds）在赫尔辛基大学上学时出于个人爱好而编写的。 </p>
+<p>当年 linus 就是因为接触到了unix而后才自己想开发一个简易的系统内核的，他开发的简易系统内核其实就是linux。当时linus 把开发的这个系统内核丢到网上提供大家下载，由于它的精致小巧，越来越多的爱好者去研究它。人们对这个内核添枝加叶，而后成为了一个系统。也许你听说过吧，linux 是免费的。其实这里的免费只是说linux的内核免费。在 linux 内核的基础上而产生了众多 linux 的版本。</p>
+<img src="//wolferhua.gitee.io/blog/images/linux/LinuxVersion.png">
+
+<img src="//wolferhua.gitee.io/blog/images/linux/linux-family.jpg">
+
+
+<h1 id="发行版"><a href="#发行版" class="headerlink" title="发行版"></a>发行版</h1><h2 id="关系"><a href="#关系" class="headerlink" title="关系"></a>关系</h2><pre><code>- 均是使用linux内核，提供硬件、磁盘、文件系统、多任务的核心操作。
+- 不同发行版定位不一样：面向个人桌面或企业服务。</code></pre><h2 id="区别"><a href="#区别" class="headerlink" title="区别"></a>区别</h2><pre><code>- 内核版本不同
+- 包管理器不同 `最大的区别`</code></pre><h1 id="Linux-思想"><a href="#Linux-思想" class="headerlink" title="Linux 思想"></a>Linux 思想</h1><h2 id="1、-一切接皆文件"><a href="#1、-一切接皆文件" class="headerlink" title="1、 一切接皆文件"></a>1、 一切接皆文件</h2><p>几乎把所有的资源系统抽象为文件形式：包括硬件设备，甚至通信接口等。作用：提高资源管理效率。例如：<br></p>
+<ul>
+<li>物理终端：/dev/console</li>
+<li>虚拟终端：/dev/tty#（#为1~6）</li>
+<li>串行终端：/dev/ttyS#</li>
+<li>伪终端：/dev/pts/#</li>
+<li>/dev/zero 一个可以都出无限个0的文件</li>
+<li>/dev/null 一个重定向进去之后就消失了的文件，相当于黑洞 </li>
+<li>…… </li>
+</ul>
+<blockquote>
+<p><strong>优点：</strong><br>可以使用同一套机制来处理Linux系统中的大多数资源。<br><br>比如系统调用：open(), read(), write(), close(), delete(), create()</p>
+</blockquote>
+<h2 id="2、-由众多功能单一的程序共同完成复杂任务"><a href="#2、-由众多功能单一的程序共同完成复杂任务" class="headerlink" title="2、 由众多功能单一的程序共同完成复杂任务"></a>2、 由众多功能单一的程序共同完成复杂任务</h2><p>Linux倾向于让一个程序只做一件事，并且做好；让这样的程序能够基于统一的标准开放接口，再由多个这种功能单一的程序组合起来，共同完成更为复杂的任务。</p>
+<blockquote>
+<p><strong>优点：</strong><br>程序代码更轻量，更高效；<br>出现错误更容易定位；<br>程序的功能延展更具灵活性；</p>
+</blockquote>
+<h2 id="3、-尽量避免跟用户交互"><a href="#3、-尽量避免跟用户交互" class="headerlink" title="3、 尽量避免跟用户交互"></a>3、 尽量避免跟用户交互</h2><p>正是由于面向的对象不同，Linux系统管理多使用命令行接口，通过命令对系统进行操作和管理，这与Windows的设计理念有着迥然的区别。</p>
+<blockquote>
+<p><strong>优点：</strong><br>易于以编程的方式实现自动化任务；<br>为自动化运维，乃至DevOps日后的发展奠定了基础。</p>
+</blockquote>
+<h2 id="4、-使用文本文件保存配置信息"><a href="#4、-使用文本文件保存配置信息" class="headerlink" title="4、 使用文本文件保存配置信息"></a>4、 使用文本文件保存配置信息</h2><p>所有的配置文件都采用文本文件的方式保存，管理人员可以通过vi或vim文本编辑工具对其进行修改。</p>
+<blockquote>
+<p><strong>优点：</strong><br>方便管理者对应用软件进行配置、检查工作，而且为避免服务因修改配置中断，多数应用程序也会针对配置文件的更改提供不中断服务的reload操作，这也是Linux系统运行比Windows稳定的一个因素。</p>
+</blockquote>
+<h2 id="5、-提供机制，而非策略"><a href="#5、-提供机制，而非策略" class="headerlink" title="5、 提供机制，而非策略"></a>5、 提供机制，而非策略</h2><p> 机制，是实现某个功能需要的原语操作和结构      </p>
+<p> 策略，是某功能的具体实现  </p>
+<blockquote>
+<p><strong>优点：</strong><br> 提供机制，而非策略，指的就是要给用户充分的自主可调配性</p>
+</blockquote>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="/2019/10/26/linux-001-intro/" title="Linux简介" target="_blank" rel="external">https://wolferhua.github.io/2019/10/26/linux-001-intro/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://wolferhua.anycps.com/" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://wolferhua.anycps.com/" target="_blank"><span class="text-dark">小码侠</span><small class="ml-1x">Developer</small></a></h3>
+        <div>Golang、 PHP、 Java、 vue. js 手到擒来。服务器运维更是不在话下 shell、 Docker、 Zabbix、 Redis、 Elasticsearch、 MongoDb、 MySql……</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+           
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2019/09/08/docker-011/" title="Docker入门教程（十一）Docker Swarm"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2019/10/26/linux-002-install/" title="Linux安装"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn collapsed" data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">
+        <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/wolferhua" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="http://weibo.com/wolferhua" target="_blank" title="Weibo" data-toggle=tooltip data-placement=top><i class="icon icon-weibo"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        &copy; 2020 wolferhua
+        
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+
+    
+        <span class="copyright">
+            <span id="busuanzi_container_site_pv">
+                PV： <span id="busuanzi_value_site_pv">0</span>
+            </span>
+            <span id="busuanzi_container_site_uv">
+                UV： <span id="busuanzi_value_site_uv">0</span>
+            </span>
+        </span>
+    
+
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            if(!window.location ||!window.location.host ||window.location.host!="wolferhua.anycps.com") return;
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?4d4b0690176b0a709fb4d5c236e5136c";
+          var s = document.getElementsByTagName("script")[0]; 
+          s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        }
+        else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+    </script>
+        
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+<script src="/js/plugin.min.js"></script>
+<script src="/js/application.js"></script>
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+
+    <!-- 
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+ -->
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+   
+    
+  <!-- <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css"> -->
+  <script src="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/blueimp-md5@2.10.0/js/md5.min.js"></script>
+  <script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'a1f0b1bed343d82573b2',
+    clientSecret: '560c2b0f6e1eef7a1b0f3ea228ccb75572e63a44',
+    repo: 'gitalk-github',
+    owner: 'wolferhua',
+    admin: ['wolferhua'],
+    id: md5(location.pathname),
+    distractionFreeMode: true
+  })
+  gitalk.render('comments')
+  </script>
+
+      
+
+
+
+
+
+
+
+
+    
+<script>
+    var _mtac = {"performanceMonitor":1,"senseQuery":1};
+    (function() {
+        var mta = document.createElement("script");
+        mta.src = "//pingjs.qq.com/h5/stats.js?v2.0.4";
+        mta.setAttribute("name", "MTAH5");
+        mta.setAttribute("sid", "500683241");
+        mta.setAttribute("cid", "500683242");
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(mta, s);
+    })();
+</script>
+ 
+
+</body>
+</html>

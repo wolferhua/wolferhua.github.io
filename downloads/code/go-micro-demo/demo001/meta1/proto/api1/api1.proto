@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "github.com/micro/go-micro/api/proto/api.proto";
+
+service Api1 {
+    // go.api.Request 和 go.api.Response 里边就封装了http相关的内容。
+    rpc Get(go.api.Request) returns(go.api.Response) {};
+    rpc Post(go.api.Request) returns(go.api.Response) {};
+}
+
+// protoc --proto_path=$GOPATH/src:. --micro_out=. --go_out=. api1.proto

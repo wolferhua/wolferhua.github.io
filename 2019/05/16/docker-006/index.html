@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+<!-- 搜狗验证 -->
+  <meta name="sogou_site_verification" content="kkFBWNxy5B">
+
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000">
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top">
+  
+  
+  <title>Docker入门教程（六）Dockerfile（下）-Go WEB 服务镜像 | 小码侠</title>
+  <meta name="description" content="这一节我们需要做一个和项目相关的一个镜像，这个镜像能够运行一个http服务。 0. 创建程序main.goview raw12345678910111213141516171819202122package mainimport ( 	&quot;os&quot;	&quot;log&quot;    &quot;net/http&quot;)type helloHandler struct{}var host = &quot;&quot;func (h *helloHand">
+<meta name="keywords" content="linux,docker">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker入门教程（六）Dockerfile（下）-Go WEB 服务镜像">
+<meta property="og:url" content="https://wolferhua.github.io/2019/05/16/docker-006/index.html">
+<meta property="og:site_name" content="小码侠">
+<meta property="og:description" content="这一节我们需要做一个和项目相关的一个镜像，这个镜像能够运行一个http服务。 0. 创建程序main.goview raw12345678910111213141516171819202122package mainimport ( 	&quot;os&quot;	&quot;log&quot;    &quot;net/http&quot;)type helloHandler struct{}var host = &quot;&quot;func (h *helloHand">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://wolferhua.gitee.io/blog/images/docker/docker-goweb.jpg">
+<meta property="og:image" content="https://wolferhua.gitee.io/blog/images/docker/docker4-goweb-0.png">
+<meta property="og:updated_time" content="2020-02-10T11:07:12.016Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Docker入门教程（六）Dockerfile（下）-Go WEB 服务镜像">
+<meta name="twitter:description" content="这一节我们需要做一个和项目相关的一个镜像，这个镜像能够运行一个http服务。 0. 创建程序main.goview raw12345678910111213141516171819202122package mainimport ( 	&quot;os&quot;	&quot;log&quot;    &quot;net/http&quot;)type helloHandler struct{}var host = &quot;&quot;func (h *helloHand">
+<meta name="twitter:image" content="https://wolferhua.gitee.io/blog/images/docker/docker-goweb.jpg">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://wolferhua.github.io/2019/05/16/docker-006/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="小码侠" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+  
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.css">
+  
+</head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://wolferhua.anycps.com/" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">小码侠</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Chengdu, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav menu-highlight">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/wolferhua" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="http://weibo.com/wolferhua" target="_blank" title="Weibo" data-toggle=tooltip data-placement=top><i class="icon icon-weibo"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a><span class="category-list-count">11</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/go/">go</a><span class="category-list-count">9</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/go/micro/">micro</a><span class="category-list-count">9</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/kubernetes/">kubernetes</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/">leetcode</a><span class="category-list-count">8</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/array/">array</a><span class="category-list-count">8</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/linux/">linux</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/linux/vagrant/">vagrant</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/protobuf/">protobuf</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/面试/">面试</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/array/">array</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/leetcode/">leetcode</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/micro/">micro</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/microservice/">microservice</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/protobuf/">protobuf</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/array/" style="font-size: 13.25px;">array</a> <a href="/tags/docker/" style="font-size: 13.75px;">docker</a> <a href="/tags/go/" style="font-size: 13.5px;">go</a> <a href="/tags/golang/" style="font-size: 13.25px;">golang</a> <a href="/tags/java/" style="font-size: 13px;">java</a> <a href="/tags/leetcode/" style="font-size: 13.25px;">leetcode</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/micro/" style="font-size: 13.5px;">micro</a> <a href="/tags/microservice/" style="font-size: 13.5px;">microservice</a> <a href="/tags/nginx/" style="font-size: 13px;">nginx</a> <a href="/tags/protobuf/" style="font-size: 13px;">protobuf</a> <a href="/tags/ssh/" style="font-size: 13px;">ssh</a> <a href="/tags/vagrant/" style="font-size: 13px;">vagrant</a> <a href="/tags/面试/" style="font-size: 13px;">面试</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">十月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">九月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/linux/">linux</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/linux/vagrant/">vagrant</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/13/vagrant-guide-1/" class="title">Vagrant指南</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-13T15:05:17.000Z" itemprop="datePublished">2020-02-13</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/12/go-micro-book4-5/" class="title">Go-Micro学习笔记 - 4.5 MicroAPI 之 meta*</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-12T06:47:44.000Z" itemprop="datePublished">2020-02-12</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/10/1go-micro-book4-4/" class="title">Go-Micro学习笔记 - 4.4 MicroAPI 之 event</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-10T11:30:59.000Z" itemprop="datePublished">2020-02-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/10/2go-micro-book4-3/" class="title">Go-Micro学习笔记 - 4.3 MicroAPI 之 web 、http</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-10T11:30:59.000Z" itemprop="datePublished">2020-02-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/06/go-micro-book4-2/" class="title">Go-Micro学习笔记 - 4.2 MicroAPI 之 rpc</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-06T09:19:22.000Z" itemprop="datePublished">2020-02-06</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<aside class="sidebar sidebar-toc collapse" id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#0-创建程序"><span class="toc-number">1.</span> <span class="toc-text">0. 创建程序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#1-使用Golang镜像"><span class="toc-number">2.</span> <span class="toc-text">1. 使用Golang镜像</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#创建Dockerfile"><span class="toc-number">2.1.</span> <span class="toc-text">创建Dockerfile</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#构建"><span class="toc-number">2.2.</span> <span class="toc-text">构建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看镜像"><span class="toc-number">2.3.</span> <span class="toc-text">查看镜像</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#运行镜像"><span class="toc-number">2.4.</span> <span class="toc-text">运行镜像</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#测试"><span class="toc-number">2.5.</span> <span class="toc-text">测试</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-使用-scratch"><span class="toc-number">3.</span> <span class="toc-text">2. 使用 scratch</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Dockerfile"><span class="toc-number">3.1.</span> <span class="toc-text">Dockerfile</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#构建-1"><span class="toc-number">3.2.</span> <span class="toc-text">构建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看镜像-1"><span class="toc-number">3.3.</span> <span class="toc-text">查看镜像</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#运行镜像-1"><span class="toc-number">3.4.</span> <span class="toc-text">运行镜像</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#测试-1"><span class="toc-number">3.5.</span> <span class="toc-text">测试</span></a></li></ol></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-docker-006" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Docker入门教程（六）Dockerfile（下）-Go WEB 服务镜像
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2019/05/16/docker-006/" class="article-date">
+	  <time datetime="2019-05-16T12:14:50.000Z" itemprop="datePublished">2019-05-16</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/docker/">docker</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link" href="/tags/docker/">docker</a>, <a class="article-tag-link" href="/tags/linux/">linux</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2019/05/16/docker-006/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 857(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 4(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <p>这一节我们需要做一个和项目相关的一个镜像，这个镜像能够运行一个http服务。</p>
+<h1 id="0-创建程序"><a href="#0-创建程序" class="headerlink" title="0. 创建程序"></a>0. 创建程序</h1><figure class="highlight golang"><figcaption><span>main.go</span><a href="/downloads/code/docker/004-go/main.go">view raw</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> ( </span><br><span class="line">	<span class="string">"os"</span></span><br><span class="line">	<span class="string">"log"</span></span><br><span class="line">    <span class="string">"net/http"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> helloHandler <span class="keyword">struct</span>{}</span><br><span class="line"><span class="keyword">var</span> host = <span class="string">""</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(h *helloHandler)</span> <span class="title">ServeHTTP</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> {</span><br><span class="line">	w.Header().Set(<span class="string">"Content-Type"</span>, <span class="string">"text/html; charset=UTF-8"</span> )</span><br><span class="line">	w.Header().Set(<span class="string">"Content-Transfer-Encoding"</span>, <span class="string">"quoted-printable"</span>)</span><br><span class="line">    w.Write([]<span class="keyword">byte</span>(<span class="string">"Host："</span>+host+<span class="string">"&lt;br&gt; Hello, world! from golang."</span>)) <span class="comment">//输出内容</span></span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br><span class="line">	host, _ = os.Hostname() <span class="comment">//获取当前机器名称</span></span><br><span class="line">	http.Handle(<span class="string">"/"</span>, &amp;helloHandler{})</span><br><span class="line">	log.Println(<span class="string">"Start web service: http://127.0.0.1:8080"</span>)</span><br><span class="line">    log.Fatal(http.ListenAndServe(<span class="string">":8080"</span>, <span class="literal">nil</span>)) <span class="comment">//指定端口</span></span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="1-使用Golang镜像"><a href="#1-使用Golang镜像" class="headerlink" title="1. 使用Golang镜像"></a>1. 使用Golang镜像</h1><h2 id="创建Dockerfile"><a href="#创建Dockerfile" class="headerlink" title="创建Dockerfile"></a>创建Dockerfile</h2><figure class="highlight dockerfile"><figcaption><span>Dockerfile</span><a href="/downloads/code/docker/004-go/Dockerfile">view raw</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 指定基础镜像, 必须存在于Dockerfile 第一行</span></span><br><span class="line"><span class="keyword">FROM</span> daocloud.io/golang</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 作者信息</span></span><br><span class="line"><span class="keyword">MAINTAINER</span> wolferhua &lt;wolferhua@qq.com&gt; </span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加文件到镜像</span></span><br><span class="line"><span class="keyword">ADD</span><span class="bash"> . /usr/src/app</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 切换目录，相当于cd xxx</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> /usr/src/app</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 执行编译g</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> go build -o app main.go </span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 切换目录</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> /app</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 将编译后的移动到 /app 目录</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> mv /usr/src/app/app .</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 开放端口，在运行时，并不会正在的开放端口。还是需要-p</span></span><br><span class="line"><span class="comment"># 这里只是标明需要使用的端口</span></span><br><span class="line"><span class="keyword">EXPOSE</span> <span class="number">8080</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 镜像启动时执行的命令</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">CMD</span><span class="bash"> [<span class="string">"./app"</span>]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 构建命令</span></span><br><span class="line"><span class="comment">#docker build -t goweb .</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="构建"><a href="#构建" class="headerlink" title="构建"></a>构建</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">docker build -t goweb .</span><br><span class="line"></span><br><span class="line"><span class="comment">###### output ######</span></span><br><span class="line"><span class="comment"># Sending build context to Docker daemon  4.608kB</span></span><br><span class="line"><span class="comment"># Step 1/9 : FROM daocloud.io/golang</span></span><br><span class="line"><span class="comment">#  ---&gt; 1cdc81f11b10</span></span><br><span class="line"><span class="comment"># Step 2/9 : MAINTAINER wolferhua &lt;wolferhua@qq.com&gt;</span></span><br><span class="line"><span class="comment">#  ---&gt; Using cache</span></span><br><span class="line"><span class="comment">#  ---&gt; a217ea00567b</span></span><br><span class="line"><span class="comment"># Step 3/9 : ADD . /usr/src/app</span></span><br><span class="line"><span class="comment">#  ---&gt; 1d9a89ebab03</span></span><br><span class="line"><span class="comment"># Step 4/9 : WORKDIR /usr/src/app</span></span><br><span class="line"><span class="comment">#  ---&gt; Running in 06a978520d7b</span></span><br><span class="line"><span class="comment"># Removing intermediate container 06a978520d7b</span></span><br><span class="line"><span class="comment">#  ---&gt; 980f422c4a1b</span></span><br><span class="line"><span class="comment"># Step 5/9 : RUN go build -o app main.go</span></span><br><span class="line"><span class="comment">#  ---&gt; Running in c3ef068bda33</span></span><br><span class="line"><span class="comment"># Removing intermediate container c3ef068bda33</span></span><br><span class="line"><span class="comment">#  ---&gt; f51cfc40c95e</span></span><br><span class="line"><span class="comment"># Step 6/9 : WORKDIR /app</span></span><br><span class="line"><span class="comment">#  ---&gt; Running in a36e737525c4</span></span><br><span class="line"><span class="comment"># Removing intermediate container a36e737525c4</span></span><br><span class="line"><span class="comment">#  ---&gt; 1164e24a33ea</span></span><br><span class="line"><span class="comment"># Step 7/9 : RUN mv /usr/src/app/app .</span></span><br><span class="line"><span class="comment">#  ---&gt; Running in 61ddf6b520b2</span></span><br><span class="line"><span class="comment"># Removing intermediate container 61ddf6b520b2</span></span><br><span class="line"><span class="comment">#  ---&gt; 971d70071cfc</span></span><br><span class="line"><span class="comment"># Step 8/9 : EXPOSE 8080</span></span><br><span class="line"><span class="comment">#  ---&gt; Running in dce834bc85e6</span></span><br><span class="line"><span class="comment"># Removing intermediate container dce834bc85e6</span></span><br><span class="line"><span class="comment">#  ---&gt; ad0d8d46670c</span></span><br><span class="line"><span class="comment"># Step 9/9 : CMD ["./app"]</span></span><br><span class="line"><span class="comment">#  ---&gt; Running in a4c65296f408</span></span><br><span class="line"><span class="comment"># Removing intermediate container a4c65296f408</span></span><br><span class="line"><span class="comment">#  ---&gt; 968083fe7ffd</span></span><br><span class="line"><span class="comment"># Successfully built 968083fe7ffd</span></span><br><span class="line"><span class="comment"># Successfully tagged goweb:latest</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="查看镜像"><a href="#查看镜像" class="headerlink" title="查看镜像"></a>查看镜像</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ docker images                       </span><br><span class="line">REPOSITORY                     TAG                 IMAGE ID            CREATED              SIZE</span><br><span class="line">goweb                          latest              968083fe7ffd        4 days ago           741MB <span class="comment"># golang 镜像，由于包含了go环境，所以镜像特别大</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="运行镜像"><a href="#运行镜像" class="headerlink" title="运行镜像"></a>运行镜像</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">docker run \</span><br><span class="line">--name goweb \</span><br><span class="line">-d \</span><br><span class="line">-p 8080:8080 \</span><br><span class="line">--restart=always \</span><br><span class="line">goweb</span><br><span class="line"></span><br><span class="line"><span class="comment"># output 599eba20d9e98ef282bac9247d2040c0461f62d5ab223e776a88fc0e20ea62ea</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><p>打开网址：<a href="http://127.0.0.1:8080" target="_blank" rel="noopener">http://127.0.0.1:8080</a></p>
+<img src="//wolferhua.gitee.io/blog/images/docker/docker-goweb.jpg">
+
+
+<h1 id="2-使用-scratch"><a href="#2-使用-scratch" class="headerlink" title="2. 使用 scratch"></a>2. 使用 <code>scratch</code></h1><blockquote>
+<p>上面我们使用了golang的基础镜像，这个镜像包含了程序的基础环境。所以体积较大，接近<code>800M</code>。但是我们知道，go程序是可以直接生成可执行文件的。所以我们需要可以只使用可执行文件来打包镜像，以节省空间占用。</p>
+</blockquote>
+<h2 id="Dockerfile"><a href="#Dockerfile" class="headerlink" title="Dockerfile"></a>Dockerfile</h2><figure class="highlight dockerfile"><figcaption><span>Dockerfile</span><a href="/downloads/code/docker/004-go-scratch/Dockerfile">view raw</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 指定基础镜像, 必须存在于Dockerfile 第一行</span></span><br><span class="line"><span class="comment"># 使用基础镜像，这个镜像是一个空的镜像，没有任何内容。且不能执行任何命令</span></span><br><span class="line"><span class="keyword">FROM</span> scratch</span><br><span class="line"></span><br><span class="line"><span class="comment"># 作者信息</span></span><br><span class="line"><span class="keyword">MAINTAINER</span> wolferhua &lt;wolferhua@qq.com&gt; </span><br><span class="line"></span><br><span class="line"><span class="comment"># 切换目录，相当于cd xxx</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> /app/</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加文件到镜像</span></span><br><span class="line"><span class="keyword">ADD</span><span class="bash"> /main /app/ </span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 执行命令</span></span><br><span class="line"><span class="keyword">CMD</span><span class="bash"> [<span class="string">"/app/main"</span>]</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="构建-1"><a href="#构建-1" class="headerlink" title="构建"></a>构建</h2><figure class="highlight bash"><figcaption><span>build</span><a href="/downloads/code/docker/004-go-scratch/build.sh">view raw</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/usr/bin/env bash </span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 执行编译</span></span><br><span class="line"><span class="comment"># scratch 镜像完全是空的，什么东西也不包含，所以生成main时候要按照下面的方式生成，使生成的main静态链接所有的库：</span></span><br><span class="line">CGO_ENABLED=0 GOOS=linux go build -v -a -installsuffix cgo -o main .</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 执行构建</span></span><br><span class="line">docker build -t goweb:scratch .</span><br></pre></td></tr></table></figure>
+
+<h2 id="查看镜像-1"><a href="#查看镜像-1" class="headerlink" title="查看镜像"></a>查看镜像</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ docker images                       </span><br><span class="line">REPOSITORY                     TAG                 IMAGE ID            CREATED              SIZE</span><br><span class="line">goweb                          scratch             ff7862ec2d63        About a minute ago   6.5MB <span class="comment"># 使用 scratch 只是程序大小，节省空间。</span></span><br><span class="line">goweb                          latest              968083fe7ffd        4 days ago           741MB <span class="comment"># golang 镜像，由于包含了go环境，所以镜像特别大</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="运行镜像-1"><a href="#运行镜像-1" class="headerlink" title="运行镜像"></a>运行镜像</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">docker run \</span><br><span class="line">--name goweb \</span><br><span class="line">-d \</span><br><span class="line">-p 8080:8080 \</span><br><span class="line">--restart=always \</span><br><span class="line">goweb:scratch</span><br><span class="line"></span><br><span class="line"><span class="comment"># output f350e19ee173c45cefa3a70b……</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="测试-1"><a href="#测试-1" class="headerlink" title="测试"></a>测试</h2><p>打开网址：<a href="http://127.0.0.1:8080" target="_blank" rel="noopener">http://127.0.0.1:8080</a></p>
+<img src="//wolferhua.gitee.io/blog/images/docker/docker4-goweb-0.png">
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="/2019/05/16/docker-006/" title="Docker入门教程（六）Dockerfile（下）-Go WEB 服务镜像" target="_blank" rel="external">https://wolferhua.github.io/2019/05/16/docker-006/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://wolferhua.anycps.com/" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://wolferhua.anycps.com/" target="_blank"><span class="text-dark">小码侠</span><small class="ml-1x">Developer</small></a></h3>
+        <div>Golang、 PHP、 Java、 vue. js 手到擒来。服务器运维更是不在话下 shell、 Docker、 Zabbix、 Redis、 Elasticsearch、 MongoDb、 MySql……</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+           
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2019/05/16/docker-005/" title="Docker入门教程（五）Dockerfile（中）-常用指令"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2019/05/22/docker-007/" title="Docker入门教程（七）镜像关联"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn collapsed" data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">
+        <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/wolferhua" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="http://weibo.com/wolferhua" target="_blank" title="Weibo" data-toggle=tooltip data-placement=top><i class="icon icon-weibo"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        &copy; 2020 wolferhua
+        
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+
+    
+        <span class="copyright">
+            <span id="busuanzi_container_site_pv">
+                PV： <span id="busuanzi_value_site_pv">0</span>
+            </span>
+            <span id="busuanzi_container_site_uv">
+                UV： <span id="busuanzi_value_site_uv">0</span>
+            </span>
+        </span>
+    
+
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            if(!window.location ||!window.location.host ||window.location.host!="wolferhua.anycps.com") return;
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?4d4b0690176b0a709fb4d5c236e5136c";
+          var s = document.getElementsByTagName("script")[0]; 
+          s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        }
+        else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+    </script>
+        
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+<script src="/js/plugin.min.js"></script>
+<script src="/js/application.js"></script>
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+
+    <!-- 
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+ -->
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+   
+    
+  <!-- <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css"> -->
+  <script src="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/blueimp-md5@2.10.0/js/md5.min.js"></script>
+  <script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'a1f0b1bed343d82573b2',
+    clientSecret: '560c2b0f6e1eef7a1b0f3ea228ccb75572e63a44',
+    repo: 'gitalk-github',
+    owner: 'wolferhua',
+    admin: ['wolferhua'],
+    id: md5(location.pathname),
+    distractionFreeMode: true
+  })
+  gitalk.render('comments')
+  </script>
+
+      
+
+
+
+
+
+
+
+
+    
+<script>
+    var _mtac = {"performanceMonitor":1,"senseQuery":1};
+    (function() {
+        var mta = document.createElement("script");
+        mta.src = "//pingjs.qq.com/h5/stats.js?v2.0.4";
+        mta.setAttribute("name", "MTAH5");
+        mta.setAttribute("sid", "500683241");
+        mta.setAttribute("cid", "500683242");
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(mta, s);
+    })();
+</script>
+ 
+
+</body>
+</html>

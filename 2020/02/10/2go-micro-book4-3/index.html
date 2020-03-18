@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+<!-- 搜狗验证 -->
+  <meta name="sogou_site_verification" content="kkFBWNxy5B">
+
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000">
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top">
+  
+  
+  <title>Go-Micro学习笔记 - 4.3 MicroAPI 之 web 、http | 小码侠</title>
+  <meta name="description" content="经过之前的学习，我们已经学会了api,rpc处理器的开发。但是使用发现，这两种处理器是一对一注册的，路由配置比较麻烦（mate*处理器的时候讲）。所以我们今天将回到我们之前的开发模式来开发服务。  web和http都具有相同的能力，但是http不支持转发websocket。  编写Web服务端代码web1/main.goview raw1234567891011121314151617181920">
+<meta name="keywords" content="go,micro,microservice">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Go-Micro学习笔记 - 4.3 MicroAPI 之 web 、http">
+<meta property="og:url" content="https://wolferhua.github.io/2020/02/10/2go-micro-book4-3/index.html">
+<meta property="og:site_name" content="小码侠">
+<meta property="og:description" content="经过之前的学习，我们已经学会了api,rpc处理器的开发。但是使用发现，这两种处理器是一对一注册的，路由配置比较麻烦（mate*处理器的时候讲）。所以我们今天将回到我们之前的开发模式来开发服务。  web和http都具有相同的能力，但是http不支持转发websocket。  编写Web服务端代码web1/main.goview raw1234567891011121314151617181920">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://wolferhua.gitee.io/blog/images/go-micro-book/web.png">
+<meta property="og:updated_time" content="2020-02-11T09:35:13.750Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Go-Micro学习笔记 - 4.3 MicroAPI 之 web 、http">
+<meta name="twitter:description" content="经过之前的学习，我们已经学会了api,rpc处理器的开发。但是使用发现，这两种处理器是一对一注册的，路由配置比较麻烦（mate*处理器的时候讲）。所以我们今天将回到我们之前的开发模式来开发服务。  web和http都具有相同的能力，但是http不支持转发websocket。  编写Web服务端代码web1/main.goview raw1234567891011121314151617181920">
+<meta name="twitter:image" content="https://wolferhua.gitee.io/blog/images/go-micro-book/web.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://wolferhua.github.io/2020/02/10/2go-micro-book4-3/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="小码侠" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+  
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.css">
+  
+</head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://wolferhua.anycps.com/" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">小码侠</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Chengdu, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav menu-highlight">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/wolferhua" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="http://weibo.com/wolferhua" target="_blank" title="Weibo" data-toggle=tooltip data-placement=top><i class="icon icon-weibo"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a><span class="category-list-count">11</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/go/">go</a><span class="category-list-count">9</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/go/micro/">micro</a><span class="category-list-count">9</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/kubernetes/">kubernetes</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/">leetcode</a><span class="category-list-count">8</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/array/">array</a><span class="category-list-count">8</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/linux/">linux</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/linux/vagrant/">vagrant</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/protobuf/">protobuf</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/面试/">面试</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/array/">array</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/leetcode/">leetcode</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/micro/">micro</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/microservice/">microservice</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/protobuf/">protobuf</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/array/" style="font-size: 13.25px;">array</a> <a href="/tags/docker/" style="font-size: 13.75px;">docker</a> <a href="/tags/go/" style="font-size: 13.5px;">go</a> <a href="/tags/golang/" style="font-size: 13.25px;">golang</a> <a href="/tags/java/" style="font-size: 13px;">java</a> <a href="/tags/leetcode/" style="font-size: 13.25px;">leetcode</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/micro/" style="font-size: 13.5px;">micro</a> <a href="/tags/microservice/" style="font-size: 13.5px;">microservice</a> <a href="/tags/nginx/" style="font-size: 13px;">nginx</a> <a href="/tags/protobuf/" style="font-size: 13px;">protobuf</a> <a href="/tags/ssh/" style="font-size: 13px;">ssh</a> <a href="/tags/vagrant/" style="font-size: 13px;">vagrant</a> <a href="/tags/面试/" style="font-size: 13px;">面试</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">十月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">九月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/linux/">linux</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/linux/vagrant/">vagrant</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/13/vagrant-guide-1/" class="title">Vagrant指南</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-13T15:05:17.000Z" itemprop="datePublished">2020-02-13</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/12/go-micro-book4-5/" class="title">Go-Micro学习笔记 - 4.5 MicroAPI 之 meta*</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-12T06:47:44.000Z" itemprop="datePublished">2020-02-12</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/10/1go-micro-book4-4/" class="title">Go-Micro学习笔记 - 4.4 MicroAPI 之 event</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-10T11:30:59.000Z" itemprop="datePublished">2020-02-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/10/2go-micro-book4-3/" class="title">Go-Micro学习笔记 - 4.3 MicroAPI 之 web 、http</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-10T11:30:59.000Z" itemprop="datePublished">2020-02-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/go/">go</a><i class="icon icon-angle-right"></i><a class="category-link" href="/categories/go/micro/">micro</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/02/06/go-micro-book4-2/" class="title">Go-Micro学习笔记 - 4.2 MicroAPI 之 rpc</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-02-06T09:19:22.000Z" itemprop="datePublished">2020-02-06</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<aside class="sidebar sidebar-toc collapse" id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#编写Web"><span class="toc-number">1.</span> <span class="toc-text">编写Web</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#服务端代码"><span class="toc-number">1.1.</span> <span class="toc-text">服务端代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#前端界面"><span class="toc-number">1.2.</span> <span class="toc-text">前端界面</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#html"><span class="toc-number">1.2.1.</span> <span class="toc-text">html</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#javascript"><span class="toc-number">1.2.2.</span> <span class="toc-text">javascript</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#运行代码"><span class="toc-number">2.</span> <span class="toc-text">运行代码</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#运行效果"><span class="toc-number">2.1.</span> <span class="toc-text">运行效果</span></a></li></ol></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-2go-micro-book4-3" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Go-Micro学习笔记 - 4.3 MicroAPI 之 web 、http
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/02/10/2go-micro-book4-3/" class="article-date">
+	  <time datetime="2020-02-10T11:30:59.000Z" itemprop="datePublished">2020-02-10</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/go/">go</a>►<a class="article-category-link" href="/categories/go/micro/">micro</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link" href="/tags/go/">go</a>, <a class="article-tag-link" href="/tags/micro/">micro</a>, <a class="article-tag-link" href="/tags/microservice/">microservice</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/02/10/2go-micro-book4-3/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.8k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 9(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <p>经过之前的学习，我们已经学会了<code>api</code>,<code>rpc</code>处理器的开发。但是使用发现，这两种处理器是一对一注册的，路由配置比较麻烦（mate*处理器的时候讲）。所以我们今天将回到我们之前的开发模式来开发服务。</p>
+<blockquote>
+<p><code>web</code>和<code>http</code>都具有相同的能力，但是<code>http</code>不支持转发<code>websocket</code>。</p>
+</blockquote>
+<h1 id="编写Web"><a href="#编写Web" class="headerlink" title="编写Web"></a>编写Web</h1><h2 id="服务端代码"><a href="#服务端代码" class="headerlink" title="服务端代码"></a>服务端代码</h2><figure class="highlight golang"><figcaption><span>web1/main.go</span><a href="/downloads/code/go-micro-demo/demo001/web1/main.go">view raw</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"encoding/json"</span></span><br><span class="line">	<span class="string">"net/http"</span></span><br><span class="line">	<span class="string">"net/url"</span></span><br><span class="line">	<span class="string">"strings"</span></span><br><span class="line"></span><br><span class="line">	<span class="string">"github.com/gorilla/websocket"</span></span><br><span class="line"></span><br><span class="line">	<span class="string">"github.com/micro/go-micro/v2"</span></span><br><span class="line">	<span class="string">"github.com/micro/go-micro/v2/transport/grpc"</span></span><br><span class="line">	<span class="string">"github.com/micro/go-micro/v2/util/log"</span></span><br><span class="line">	<span class="string">"github.com/micro/go-micro/v2/web"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// websocket 服务</span></span><br><span class="line"><span class="keyword">var</span> upgrader = websocket.Upgrader{CheckOrigin: <span class="function"><span class="keyword">func</span><span class="params">(r *http.Request)</span> <span class="title">bool</span></span> {</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">}}</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> sysName = <span class="string">`系统通知：`</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 消息列表</span></span><br><span class="line"><span class="keyword">type</span> Message <span class="keyword">struct</span> {</span><br><span class="line">	Code    <span class="keyword">int</span>    <span class="string">`json:"code"`</span></span><br><span class="line">	Name    <span class="keyword">string</span> <span class="string">`json:"name"`</span></span><br><span class="line">	Type    <span class="keyword">int</span>    <span class="string">`json:"type"`</span></span><br><span class="line">	Message <span class="keyword">string</span> <span class="string">`json:"message"`</span></span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> messages = <span class="built_in">make</span>(<span class="keyword">chan</span> *Message, <span class="number">100</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 链接列表</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> connections = <span class="keyword">map</span>[<span class="keyword">string</span>]*websocket.Conn{}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br><span class="line">	<span class="comment">// 这里使用的是go-micro web 包，因为它已经实现了服务注册，和发现的能力。不需要我们再去处理了。</span></span><br><span class="line">	service := web.NewService(</span><br><span class="line">		web.Name(<span class="string">"com.anycps.wolferhua.api.web1"</span>),</span><br><span class="line">		web.MicroService(micro.NewService(micro.Transport(grpc.NewTransport()))),</span><br><span class="line">	)</span><br><span class="line">	service.Options().Service.Client()</span><br><span class="line">	<span class="comment">// 初始化服务</span></span><br><span class="line">	<span class="keyword">if</span> err := service.Init(); err != <span class="literal">nil</span> {</span><br><span class="line">		log.Fatal(<span class="string">"Init"</span>, err)</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 路由注册</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 注册静态资源目录（页面）</span></span><br><span class="line">	service.Handle(<span class="string">"/web1/"</span>, http.StripPrefix(<span class="string">"/web1/"</span>, http.FileServer(http.Dir(<span class="string">"html"</span>))))</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 注册websocket监听（socket）</span></span><br><span class="line">	service.HandleFunc(<span class="string">"/web1/ws"</span>, ws)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 获取用户列表接口（接口）</span></span><br><span class="line">	service.HandleFunc(<span class="string">"/web1/ws/users"</span>, users)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">go</span> wsSend()</span><br><span class="line">	<span class="comment">// 启动服务</span></span><br><span class="line">	<span class="keyword">if</span> err := service.Run(); err != <span class="literal">nil</span> {</span><br><span class="line">		log.Fatal(<span class="string">"Run: "</span>, err)</span><br><span class="line">	}</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取用户列表接口</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">users</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> {</span><br><span class="line">	<span class="comment">// 读取列表</span></span><br><span class="line">	list := <span class="built_in">make</span>([]<span class="keyword">string</span>, <span class="number">0</span>, <span class="built_in">len</span>(connections))</span><br><span class="line">	<span class="keyword">for</span> name, _ := <span class="keyword">range</span> connections {</span><br><span class="line">		list = <span class="built_in">append</span>(list, name)</span><br><span class="line">	}</span><br><span class="line">	<span class="comment">// 返回数据</span></span><br><span class="line"></span><br><span class="line">	w.Header().Add(<span class="string">"Content-Type"</span>, <span class="string">"application/json; charset=utf-8"</span>)</span><br><span class="line"></span><br><span class="line">	w.WriteHeader(<span class="number">200</span>)</span><br><span class="line"></span><br><span class="line">	data, _ := json.Marshal(list)</span><br><span class="line">	w.Write(data)</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="comment">// websocket 服务</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ws</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> {</span><br><span class="line">	vals, err := url.ParseQuery(r.URL.RawQuery)</span><br><span class="line">	name := strings.TrimSpace(vals.Get(<span class="string">"name"</span>))</span><br><span class="line"></span><br><span class="line">	<span class="comment">//fmt.Println(vals.Get("name"))</span></span><br><span class="line"></span><br><span class="line">	c, err := upgrader.Upgrade(w, r, <span class="literal">nil</span>)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> {</span><br><span class="line">		log.Errorf(<span class="string">"upgrade: %s"</span>, err)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	}</span><br><span class="line">	<span class="comment">// 退出</span></span><br><span class="line">	<span class="keyword">defer</span> c.Close()</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 判断内容</span></span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(name) &lt; <span class="number">1</span> {</span><br><span class="line">		<span class="comment">// 返回错误信息</span></span><br><span class="line">		<span class="comment">// http.Error(w, `{"code":500,"message":"请输入名称！"}`, 500)</span></span><br><span class="line">		c.WriteMessage(websocket.TextMessage, []<span class="keyword">byte</span>(<span class="string">`{"code":500,"message":"请输入名称！"}`</span>))</span><br><span class="line"></span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	}</span><br><span class="line">	<span class="comment">// 验证重复状态</span></span><br><span class="line">	<span class="keyword">if</span> _, ok := connections[name]; ok {</span><br><span class="line">		<span class="comment">// 返回错误信息</span></span><br><span class="line">		<span class="comment">// http.Error(w, `{"code":500,"message":"请输入名称！"}`, 500)</span></span><br><span class="line">		c.WriteMessage(websocket.TextMessage, []<span class="keyword">byte</span>(<span class="string">`{"code":501,"message":"名称已经存在了！"}`</span>))</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> {</span><br><span class="line"></span><br><span class="line">		<span class="comment">// 退出客户列表</span></span><br><span class="line">		<span class="built_in">delete</span>(connections, name)</span><br><span class="line"></span><br><span class="line">		messages &lt;- &amp;Message{Type: websocket.TextMessage, Code: <span class="number">119</span>, Name: sysName, Message: <span class="string">` `</span> + name + <span class="string">` 退出了 `</span>}</span><br><span class="line">		<span class="comment">// 关闭链接</span></span><br><span class="line">		c.Close()</span><br><span class="line">	}()</span><br><span class="line">	connections[name] = c</span><br><span class="line">	messages &lt;- &amp;Message{Type: websocket.TextMessage, Code: <span class="number">120</span>, Name: sysName, Message: <span class="string">` `</span> + name + <span class="string">` 上线了 `</span>}</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> {</span><br><span class="line">		<span class="comment">// 读取消息</span></span><br><span class="line">		mt, message, err := c.ReadMessage()</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> {</span><br><span class="line">			log.Error(<span class="string">"read:"</span>, err)</span><br><span class="line">			<span class="keyword">break</span></span><br><span class="line">		}</span><br><span class="line">		log.Errorf(<span class="string">"recv: %s"</span>, message)</span><br><span class="line">		<span class="comment">// 写入消息列表</span></span><br><span class="line">		messages &lt;- &amp;Message{Name: name, Code: <span class="number">200</span>, Type: mt, Message: <span class="keyword">string</span>(message)}</span><br><span class="line">	}</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="comment">// 消息消费</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">wsSend</span><span class="params">()</span></span> {</span><br><span class="line">	<span class="comment">// 读取消息</span></span><br><span class="line">	<span class="keyword">for</span> message := <span class="keyword">range</span> messages {</span><br><span class="line">		<span class="comment">// 遍历发给所有人。</span></span><br><span class="line">		<span class="keyword">for</span> name, conn := <span class="keyword">range</span> connections {</span><br><span class="line">			<span class="keyword">if</span> conn != <span class="literal">nil</span> {</span><br><span class="line">				err := conn.WriteJSON(message)</span><br><span class="line">				<span class="keyword">if</span> err != <span class="literal">nil</span> {</span><br><span class="line">					log.Error(<span class="string">"send to "</span>, name, <span class="string">"err :"</span>, err)</span><br><span class="line">				}</span><br><span class="line">			}</span><br><span class="line">		}</span><br><span class="line">	}</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<h2 id="前端界面"><a href="#前端界面" class="headerlink" title="前端界面"></a>前端界面</h2><h3 id="html"><a href="#html" class="headerlink" title="html"></a>html</h3><figure class="highlight html"><figcaption><span>web1/html/index.html</span><a href="/downloads/code/go-micro-demo/demo001/web1/html/index.html">view raw</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!doctype <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- Required meta tags --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">"viewport"</span> <span class="attr">content</span>=<span class="string">"width=device-width, initial-scale=1, shrink-to-fit=no"</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!-- Bootstrap CSS --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">"stylesheet"</span> <span class="attr">href</span>=<span class="string">"https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"</span></span></span><br><span class="line"><span class="tag">          <span class="attr">integrity</span>=<span class="string">"sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"</span> <span class="attr">crossorigin</span>=<span class="string">"anonymous"</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>Go Web1<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">style</span>&gt;</span></span><br><span class="line">        body {</span><br><span class="line">            padding-top: 100px;</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line"><span class="css">        <span class="selector-class">.main-body</span> &gt; <span class="selector-class">.row</span> {</span></span><br><span class="line">            margin-top: 30px;</span><br><span class="line">            margin-bottom: 30px;</span><br><span class="line">        }</span><br><span class="line"><span class="css">        <span class="selector-class">.message-box</span>{</span></span><br><span class="line">            padding: 30px;</span><br><span class="line">        }</span><br><span class="line">    <span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"container-xl main-body border"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"row message-row"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"col "</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!--消息显示框框--&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"container-fluid border message-box"</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"row"</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"col"</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">p</span> <span class="attr">class</span>=<span class="string">"text-muted text-center"</span>&gt;</span>欢迎使用。<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"col-2 border"</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">h1</span>&gt;</span>在线用户列表：<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"></span><br><span class="line">            <span class="tag">&lt;<span class="name">ul</span> <span class="attr">class</span>=<span class="string">"list-group user-list"</span>&gt;</span></span><br><span class="line">                <span class="comment">&lt;!--显示用户列表--&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"row "</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"col"</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!--消息输入框--&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">textarea</span> <span class="attr">class</span>=<span class="string">"form-control"</span> <span class="attr">id</span>=<span class="string">"message"</span> <span class="attr">rows</span>=<span class="string">"3"</span>&gt;</span><span class="tag">&lt;/<span class="name">textarea</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"row"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"col"</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!--发送按钮--&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">button</span> <span class="attr">type</span>=<span class="string">"submit"</span> <span class="attr">id</span>=<span class="string">"send-but"</span> <span class="attr">class</span>=<span class="string">"btn btn-primary"</span>&gt;</span>Send<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- Optional JavaScript --&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- jQuery first, then Popper.js, then Bootstrap JS --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"</span> <span class="attr">integrity</span>=<span class="string">"sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="</span> <span class="attr">crossorigin</span>=<span class="string">"anonymous"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">integrity</span>=<span class="string">"sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">crossorigin</span>=<span class="string">"anonymous"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">integrity</span>=<span class="string">"sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">crossorigin</span>=<span class="string">"anonymous"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js"</span> <span class="attr">integrity</span>=<span class="string">"sha256-VeNaFBVDhoX3H+gJ37DpT/nTuZTdjYro9yBruHjVmoQ="</span> <span class="attr">crossorigin</span>=<span class="string">"anonymous"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"index.js"</span> <span class="attr">type</span>=<span class="string">"application/javascript"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="javascript"><a href="#javascript" class="headerlink" title="javascript"></a>javascript</h3><figure class="highlight javascript"><figcaption><span>web1/html/index.js</span><a href="/downloads/code/go-micro-demo/demo001/web1/html/index.js">view raw</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//alert("message")</span></span><br><span class="line">(<span class="function"><span class="keyword">function</span> (<span class="params">$</span>) </span>{</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> sessionKey = <span class="string">'name'</span>;</span><br><span class="line">    <span class="keyword">const</span> host = <span class="built_in">window</span>.location.host;</span><br><span class="line">    <span class="keyword">const</span> wsUrl = <span class="string">"ws://"</span> + host + <span class="string">"/web1/ws?name="</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> $messageBox = $(<span class="string">".message-box"</span>); <span class="comment">//消息框</span></span><br><span class="line">    <span class="keyword">let</span> $message = $(<span class="string">"#message"</span>); <span class="comment">//消息内容</span></span><br><span class="line">    <span class="keyword">let</span> $sendBut = $(<span class="string">"#send-but"</span>); <span class="comment">//消息按钮</span></span><br><span class="line">    <span class="keyword">let</span> $userList = $(<span class="string">".user-list"</span>);<span class="comment">//用户列表</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> ws = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取用户名称</span></span><br><span class="line">    <span class="keyword">let</span> name = sessionStorage.getItem(sessionKey);<span class="comment">// 如果存在</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 加载用户列表</span></span><br><span class="line">    <span class="keyword">let</span> loadUserList = _.debounce(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>{</span><br><span class="line">        <span class="comment">//console.log($)</span></span><br><span class="line">        $.ajax({</span><br><span class="line">            url:<span class="string">'/web1/ws/users'</span>,</span><br><span class="line">            dataType:<span class="string">'json'</span>,</span><br><span class="line">            success:<span class="function"><span class="keyword">function</span> (<span class="params">ret</span>) </span>{</span><br><span class="line">                <span class="comment">//console.log(ret);</span></span><br><span class="line">                <span class="comment">// 渲染消息数据</span></span><br><span class="line">                <span class="keyword">let</span> $warp = $(<span class="string">'&lt;div&gt;&lt;/div&gt;'</span>);</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">let</span> i <span class="keyword">in</span> ret){</span><br><span class="line">                    $warp.append(<span class="string">'&lt;li class="list-group-item" data-name="'</span>+ret[i]+<span class="string">'"&gt;'</span>+ret[i]+<span class="string">'&lt;/li&gt;'</span>)</span><br><span class="line">                }</span><br><span class="line">                $userList.html($warp.html());</span><br><span class="line">            }</span><br><span class="line">        })</span><br><span class="line">    },<span class="number">3000</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 显示消息</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">writeMessage</span>(<span class="params">content</span>) </span>{</span><br><span class="line">        <span class="keyword">let</span> item = $(<span class="string">'&lt;div class="col"&gt;&lt;/div&gt;'</span>);</span><br><span class="line">        item.html(content);</span><br><span class="line">        writeMessageRow(item);</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">writeMessageRow</span>(<span class="params">content</span>) </span>{</span><br><span class="line">        <span class="keyword">let</span> item = $(<span class="string">'&lt;div class="row"&gt;&lt;/div&gt;'</span>);</span><br><span class="line">        item.html(content);</span><br><span class="line">        $messageBox.append(item);</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 名称输入提示</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">namePrompt</span>(<span class="params"></span>) </span>{</span><br><span class="line">        <span class="comment">// 没有存储名称。</span></span><br><span class="line">        <span class="keyword">do</span> {</span><br><span class="line">            name = <span class="built_in">window</span>.prompt(<span class="string">"请输入名称："</span>);</span><br><span class="line">            name = name.trim();</span><br><span class="line">            <span class="comment">// 存入本地存储</span></span><br><span class="line">            sessionStorage.setItem(sessionKey, name);</span><br><span class="line">        } <span class="keyword">while</span> (!name)</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 链接服务器</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">connectServer</span>(<span class="params"></span>) </span>{</span><br><span class="line">        ws = <span class="keyword">new</span> WebSocket(wsUrl + name);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 事件监听</span></span><br><span class="line">        ws.onopen = <span class="function"><span class="keyword">function</span> (<span class="params">evt</span>) </span>{</span><br><span class="line">            writeMessage(<span class="string">'&lt;p class="text-success text-center"&gt;与服务器链接已经建立。&lt;/p&gt;'</span>);</span><br><span class="line">            loadUserList();</span><br><span class="line">        };</span><br><span class="line">        ws.onclose = <span class="function"><span class="keyword">function</span> (<span class="params">evt</span>) </span>{</span><br><span class="line">            writeMessage(<span class="string">'&lt;p class="text-danger text-center"&gt;链接断开，请重新链接。&lt;/p&gt;'</span>);</span><br><span class="line">            ws = <span class="literal">null</span>;</span><br><span class="line">        };</span><br><span class="line">        ws.onmessage = <span class="function"><span class="keyword">function</span> (<span class="params">evt</span>) </span>{</span><br><span class="line">            <span class="keyword">let</span> data = <span class="built_in">JSON</span>.parse(evt.data);</span><br><span class="line">            <span class="keyword">if</span> (!data || !data.code || !data.message) <span class="keyword">return</span>; <span class="comment">// 消息体不匹配</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (data.code &gt;= <span class="number">500</span>) {</span><br><span class="line">                <span class="comment">// 系统异常消息：退出，并关闭链接</span></span><br><span class="line">                sessionStorage.removeItem(sessionKey);</span><br><span class="line">                writeMessage(<span class="string">'&lt;p class="text-danger text-center"&gt;'</span> + data.message + <span class="string">'&lt;/p&gt;'</span>);</span><br><span class="line">                ws = <span class="literal">null</span>;</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            }</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (data.code &gt;= <span class="number">200</span>) {</span><br><span class="line">                <span class="comment">// 用户消息。显示消息内容</span></span><br><span class="line">                <span class="keyword">var</span> message = <span class="string">''</span>;</span><br><span class="line">                <span class="keyword">if</span> (data.name == name) {</span><br><span class="line">                    <span class="comment">//本人发送消息</span></span><br><span class="line">                    message += <span class="string">'&lt;div class="col-auto"&gt;&lt;p class="text-success"&gt;'</span> + data.name + <span class="string">'&lt;/p&gt;&lt;/div&gt;'</span></span><br><span class="line">                } <span class="keyword">else</span> {</span><br><span class="line">                    <span class="comment">//其他人发送消息</span></span><br><span class="line">                    message += <span class="string">'&lt;div class="col-auto"&gt;&lt;p class="text-muted"&gt;'</span> + data.name + <span class="string">'&lt;/p&gt;&lt;/div&gt;'</span></span><br><span class="line">                }</span><br><span class="line"></span><br><span class="line">                message += <span class="string">'&lt;div class="col"&gt;'</span> + data.message + <span class="string">'&lt;/div&gt;'</span>;</span><br><span class="line">                writeMessageRow(message);</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            }</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">            <span class="comment">// 系统通知消息</span></span><br><span class="line">            <span class="keyword">if</span> (data.code &gt;= <span class="number">100</span>) {</span><br><span class="line">                writeMessage(<span class="string">'&lt;p class="text-muted  text-center"&gt;'</span> + data.message + <span class="string">'&lt;/p&gt;'</span>);</span><br><span class="line">                loadUserList();</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            }</span><br><span class="line"></span><br><span class="line">        };</span><br><span class="line">        ws.onerror = <span class="function"><span class="keyword">function</span> (<span class="params">evt</span>) </span>{</span><br><span class="line">            writeMessage(<span class="string">'&lt;p class="text-danger text-center"&gt;服务器错误，请重新链接。&lt;/p&gt;'</span>);</span><br><span class="line">            ws = <span class="literal">null</span>;</span><br><span class="line">        };</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 节流函数，防止重复点击。</span></span><br><span class="line">    <span class="keyword">let</span> send = _.debounce(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>{</span><br><span class="line">        <span class="keyword">var</span> content = $message.val().trim();</span><br><span class="line">        <span class="keyword">if</span> (!content) {</span><br><span class="line">            alert(<span class="string">'请输入内容！'</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        }</span><br><span class="line">        <span class="keyword">if</span> (ws == <span class="literal">null</span>) {</span><br><span class="line">            namePrompt();</span><br><span class="line">            connectServer();</span><br><span class="line">        }</span><br><span class="line">        ws.send(content);</span><br><span class="line">        $message.val(<span class="string">''</span>);</span><br><span class="line">        $message.focus();</span><br><span class="line">    }, <span class="number">200</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 回车键发送消息</span></span><br><span class="line">    $message.keypress(<span class="function"><span class="keyword">function</span> (<span class="params">event</span>) </span>{</span><br><span class="line">        <span class="keyword">if</span> (event.keyCode === <span class="number">13</span>) {</span><br><span class="line">            <span class="comment">// 阻止事件冒泡</span></span><br><span class="line">            <span class="keyword">if</span> (event.preventDefault) event.preventDefault;</span><br><span class="line">            event.returnValue = <span class="literal">false</span>;</span><br><span class="line">            <span class="comment">// 发送消息</span></span><br><span class="line">            send();</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        }</span><br><span class="line">    });</span><br><span class="line">    <span class="comment">// 按钮发送</span></span><br><span class="line">    $sendBut.click(send);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 开始连接。</span></span><br><span class="line">    <span class="keyword">if</span> (name) {</span><br><span class="line">        connectServer();</span><br><span class="line">    } <span class="keyword">else</span> {</span><br><span class="line">        namePrompt();</span><br><span class="line">        connectServer();</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">})(jQuery);</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="运行代码"><a href="#运行代码" class="headerlink" title="运行代码"></a>运行代码</h1><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># mod 操作</span></span><br><span class="line">go mod init</span><br><span class="line">go mod tidy</span><br><span class="line"><span class="comment"># 运行</span></span><br><span class="line">go run main.go</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># API</span></span><br><span class="line">micro api --namespace com.anycps.wolferhua.api --handler web</span><br></pre></td></tr></table></figure>
+
+<h2 id="运行效果"><a href="#运行效果" class="headerlink" title="运行效果"></a>运行效果</h2><img src="//wolferhua.gitee.io/blog/images/go-micro-book/web.png"> 
+
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="/2020/02/10/2go-micro-book4-3/" title="Go-Micro学习笔记 - 4.3 MicroAPI 之 web 、http" target="_blank" rel="external">https://wolferhua.github.io/2020/02/10/2go-micro-book4-3/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://wolferhua.anycps.com/" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://wolferhua.anycps.com/" target="_blank"><span class="text-dark">小码侠</span><small class="ml-1x">Developer</small></a></h3>
+        <div>Golang、 PHP、 Java、 vue. js 手到擒来。服务器运维更是不在话下 shell、 Docker、 Zabbix、 Redis、 Elasticsearch、 MongoDb、 MySql……</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+           
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2020/02/06/go-micro-book4-2/" title="Go-Micro学习笔记 - 4.2 MicroAPI 之 rpc"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2020/02/10/1go-micro-book4-4/" title="Go-Micro学习笔记 - 4.4 MicroAPI 之 event"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn collapsed" data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">
+        <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/wolferhua" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="http://weibo.com/wolferhua" target="_blank" title="Weibo" data-toggle=tooltip data-placement=top><i class="icon icon-weibo"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        &copy; 2020 wolferhua
+        
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+
+    
+        <span class="copyright">
+            <span id="busuanzi_container_site_pv">
+                PV： <span id="busuanzi_value_site_pv">0</span>
+            </span>
+            <span id="busuanzi_container_site_uv">
+                UV： <span id="busuanzi_value_site_uv">0</span>
+            </span>
+        </span>
+    
+
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            if(!window.location ||!window.location.host ||window.location.host!="wolferhua.anycps.com") return;
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?4d4b0690176b0a709fb4d5c236e5136c";
+          var s = document.getElementsByTagName("script")[0]; 
+          s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        }
+        else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+    </script>
+        
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+<script src="/js/plugin.min.js"></script>
+<script src="/js/application.js"></script>
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+
+    <!-- 
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+ -->
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+   
+    
+  <!-- <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css"> -->
+  <script src="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/blueimp-md5@2.10.0/js/md5.min.js"></script>
+  <script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'a1f0b1bed343d82573b2',
+    clientSecret: '560c2b0f6e1eef7a1b0f3ea228ccb75572e63a44',
+    repo: 'gitalk-github',
+    owner: 'wolferhua',
+    admin: ['wolferhua'],
+    id: md5(location.pathname),
+    distractionFreeMode: true
+  })
+  gitalk.render('comments')
+  </script>
+
+      
+
+
+
+
+
+
+
+
+    
+<script>
+    var _mtac = {"performanceMonitor":1,"senseQuery":1};
+    (function() {
+        var mta = document.createElement("script");
+        mta.src = "//pingjs.qq.com/h5/stats.js?v2.0.4";
+        mta.setAttribute("name", "MTAH5");
+        mta.setAttribute("sid", "500683241");
+        mta.setAttribute("cid", "500683242");
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(mta, s);
+    })();
+</script>
+ 
+
+</body>
+</html>
