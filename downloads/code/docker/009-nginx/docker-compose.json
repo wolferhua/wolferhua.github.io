@@ -1,1 +1,0 @@
-{"version":"3","services":{"nginx":{"build":{"context":"."},"image":"test/nginx:compose","depends_on":["goweb"],"ports":["80:80"]},"goweb":{"build":{"context":"../004-go"},"ports":[8080],"image":"test/goweb:compose"},"alpine":{"image":"daocloud.io/alpine","command":["ping","127.0.0.1"]}}}
